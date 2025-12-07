@@ -592,14 +592,22 @@
                         const valvePosition = parseInt(trv.valve_position, 10);
 
                         if (!isNaN(valvePosition)) {
+                            // Determine valve class based on position
+                            let valveClass = 'hhrh-trv-valve';
+                            if (valvePosition === 0) {
+                                valveClass += ' hhrh-valve-closed';
+                            } else {
+                                valveClass += ' hhrh-valve-open';
+                            }
+
                             const $valve = $('<div>', {
-                                class: 'hhrh-trv-valve',
+                                class: valveClass,
                                 title: 'Valve Position: ' + valvePosition + '%'
                             });
 
                             $valve.append($('<span>', {
                                 class: 'material-symbols-outlined',
-                                text: 'propane_tank'
+                                text: 'valve'
                             }));
 
                             $valve.append($('<span>', {

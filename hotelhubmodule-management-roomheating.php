@@ -3,7 +3,7 @@
  * Plugin Name: Hotel Hub Module - Management - Room Heating
  * Plugin URI: https://github.com/jtricerolph/hotelhubmodule-management-roomheating
  * Description: Real-time room heating monitoring and control through Home Assistant integration
- * Version: 1.0.9
+ * Version: 1.0.10
  * Author: JTR
  * License: GPL v2 or later
  * Text Domain: hhrh
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('HHRH_VERSION', '1.0.9');
+define('HHRH_VERSION', '1.0.10');
 define('HHRH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('HHRH_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('HHRH_PLUGIN_BASENAME', plugin_basename(__FILE__));

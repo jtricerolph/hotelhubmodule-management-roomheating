@@ -459,7 +459,7 @@
 /* Red border and glow when valve is open */
 .hhrh-trv-heating {
     border: 2px solid #dc2626;
-    box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.5), 0 0 40px rgba(220, 38, 38, 0.2);
 }
 
 .hhrh-trv-control-header {
@@ -528,12 +528,22 @@
     border-radius: 6px;
     font-size: 11px;
     font-weight: 500;
-    background: #e0e7ff;
-    color: #3730a3;
 }
 
 .hhrh-trv-valve .material-symbols-outlined {
     font-size: 16px;
+}
+
+/* Grey when valve is closed (0%) */
+.hhrh-valve-closed {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Red when valve is open (>0%) */
+.hhrh-valve-open {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 /* Battery indicator in TRV header */
