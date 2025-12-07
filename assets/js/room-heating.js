@@ -26,6 +26,49 @@
         },
 
         /**
+         * Update last update timestamp text
+         */
+        updateLastUpdateText: function() {
+            if (HHRH.lastUpdate === 0) {
+                return;
+            }
+
+            const now = Math.floor(Date.now() / 1000);
+            const elapsed = now - HHRH.lastUpdate;
+
+            let text = '';
+            if (elapsed < 5) {
+                text = 'Just now';
+            } else if (elapsed < 60) {
+                text = elapsed + 's ago';
+            } else if (elapsed < 3600) {
+                const minutes = Math.floor(elapsed / 60);
+                text = minutes + 'm ago';
+            } else {
+                const hours = Math.floor(elapsed / 3600);
+                text = hours + 'h ago';
+            }
+
+            $('#hhrh-last-update-text').text(text);
+        },
+
+        /**
+         * Set syncing status
+         */
+        setSyncStatus: function(syncing) {
+            const $indicator = $('#hhrh-connection-indicator');
+            const $updateText = $('#hhrh-last-update-text');
+
+            if (syncing) {
+                $indicator.addClass('hhrh-syncing');
+                $updateText.text('Syncing...');
+            } else {
+                $indicator.removeClass('hhrh-syncing');
+                HHRH.updateLastUpdateText();
+            }
+        },
+
+        /**
          * Initialize the module
          */
         init: function() {
@@ -38,6 +81,11 @@
             this.bindEvents();
             this.loadRooms();
             this.initHeartbeat();
+
+            // Update timestamp every 5 seconds
+            setInterval(function() {
+                HHRH.updateLastUpdateText();
+            }, 5000);
         },
 
         /**
@@ -167,6 +215,7 @@
             }
 
             HHRH.isLoading = true;
+            HHRH.setSyncStatus(true);
 
             // Show loading state
             $('#hhrh-loading').show();
@@ -211,6 +260,7 @@
                 complete: function() {
                     console.log('[HHRH] AJAX complete, setting isLoading = false');
                     HHRH.isLoading = false;
+                    HHRH.setSyncStatus(false);
                     $('#hhrh-loading').hide();
                 }
             });
@@ -995,6 +1045,7 @@
 
             // Update timestamp
             HHRH.lastUpdate = data.timestamp;
+            HHRH.updateLastUpdateText();
         }
     };
 

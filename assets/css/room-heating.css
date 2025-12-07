@@ -86,6 +86,36 @@
     font-size: 18px;
 }
 
+.hhrh-connection-status.hhrh-syncing .material-symbols-outlined {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+/* Last Update Indicator */
+.hhrh-last-update {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 12px;
+    margin-right: 8px;
+}
+
+.hhrh-last-update .material-symbols-outlined {
+    font-size: 16px;
+}
+
 /* Controls */
 .hhrh-controls {
     background: #f9fafb;
