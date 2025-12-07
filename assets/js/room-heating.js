@@ -595,12 +595,6 @@
                         }));
 
                         $control.append($tempControl);
-
-                        // Add note
-                        $control.append($('<p>', {
-                            style: 'font-size:12px;color:#6b7280;margin-top:8px;',
-                            text: 'Temperature change is temporary until next scheduled update.'
-                        }));
                     }
 
                     $trvControls.append($control);
@@ -659,7 +653,7 @@
          */
         setTemperature: function(entityId, temperature) {
             const $button = $('.hhrh-btn-apply[data-entity-id="' + entityId + '"]');
-            $button.prop('disabled', true).text('Applying...');
+            $button.prop('disabled', true).addClass('hhrh-btn-loading');
 
             $.ajax({
                 url: hhrhData.ajaxUrl,
@@ -676,7 +670,7 @@
                         // Verify the temperature was set by checking HA state
                         HHRH.verifyTemperatureChange(entityId, $button);
                     } else {
-                        $button.prop('disabled', false).text('Apply');
+                        $button.prop('disabled', false).removeClass('hhrh-btn-loading');
                         HHRH.showNotification(
                             'error',
                             'Update Failed',
@@ -685,7 +679,7 @@
                     }
                 },
                 error: function() {
-                    $button.prop('disabled', false).text('Apply');
+                    $button.prop('disabled', false).removeClass('hhrh-btn-loading');
                     HHRH.showNotification(
                         'error',
                         'Update Failed',
@@ -712,7 +706,7 @@
                         location_id: hhrhData.locationId
                     },
                     success: function(response) {
-                        $button.prop('disabled', false).text('Apply');
+                        $button.prop('disabled', false).removeClass('hhrh-btn-loading');
 
                         if (response.success && response.data.temperature) {
                             const actualTemp = parseFloat(response.data.temperature);
@@ -739,7 +733,7 @@
                         }
                     },
                     error: function() {
-                        $button.prop('disabled', false).text('Apply');
+                        $button.prop('disabled', false).removeClass('hhrh-btn-loading');
                         HHRH.showNotification(
                             'warning',
                             'Verification Failed',

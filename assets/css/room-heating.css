@@ -539,9 +539,11 @@
     background: #ea580c;
 }
 
-.hhrh-btn-apply:disabled {
+.hhrh-btn-apply:disabled,
+.hhrh-btn-apply.hhrh-btn-loading {
     background: #d1d5db;
     cursor: not-allowed;
+    opacity: 0.6;
 }
 
 /* Responsive */
