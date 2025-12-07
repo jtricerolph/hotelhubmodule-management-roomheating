@@ -474,7 +474,12 @@
          */
         openRoomModal: function(roomId) {
             $('#hhrh-modal').show();
-            $('#hhrh-modal-title').text('Room ' + roomId);
+
+            // Find room name from cached data
+            const room = HHRH.roomsData ? HHRH.roomsData.find(r => r.room_id === roomId) : null;
+            const roomName = room ? room.room_name : roomId;
+
+            $('#hhrh-modal-title').text(roomName);
             $('#hhrh-modal-body').html('<div class="hhrh-loading"><span class="material-symbols-outlined hhrh-spinner">progress_activity</span><p>' + hhrhData.strings.loading + '</p></div>');
 
             $.ajax({
@@ -696,7 +701,7 @@
                 success: function(response) {
                     if (response.success) {
                         // Verify the temperature was set by checking HA state
-                        HHRH.verifyTemperatureChange(entityId, $button);
+                        HHRH.verifyTemperatureChange(entityId, $button, $input);
                     } else {
                         $button.prop('disabled', false).removeClass('hhrh-btn-loading');
                         HHRH.showNotification(
@@ -720,7 +725,7 @@
         /**
          * Verify temperature change was successful
          */
-        verifyTemperatureChange: function(entityId, $button) {
+        verifyTemperatureChange: function(entityId, $button, $input) {
             // Wait a moment for HA to process the change
             setTimeout(function() {
                 // Get current state from HA
