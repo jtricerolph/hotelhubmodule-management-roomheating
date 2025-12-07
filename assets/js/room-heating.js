@@ -483,7 +483,7 @@
             $('#hhrh-modal').show();
 
             // Find room name from cached data
-            const room = HHRH.roomsData ? HHRH.roomsData.find(r => r.room_id === roomId) : null;
+            const room = HHRH.rooms ? HHRH.rooms.find(r => r.room_id === roomId) : null;
             const roomName = room ? room.room_name : roomId;
 
             $('#hhrh-modal-title').text(roomName);
