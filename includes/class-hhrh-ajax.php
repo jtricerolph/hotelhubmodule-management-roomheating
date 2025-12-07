@@ -289,10 +289,11 @@ class HHRH_Ajax {
                 $location = 'Unknown';
             }
 
-            // Get associated sensors (battery, wifi, etc.) - removed _trv from entity_id
+            // Get associated sensors (battery, wifi, valve, etc.)
             $trv_base = str_replace('climate.', '', $trv['entity_id']);
             $battery = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_battery");
-            $wifi = $ha_api->find_state($all_states, "sensor.{$trv_base}_wifi_signal");
+            $wifi = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_wifi_signal");
+            $valve = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_valve_position");
 
             $trv_details[] = array(
                 'entity_id'      => $trv['entity_id'],
@@ -302,7 +303,7 @@ class HHRH_Ajax {
                 'hvac_mode'      => isset($trv['state']) ? $trv['state'] : 'unknown',
                 'battery'        => $battery ? $battery['state'] : null,
                 'wifi_signal'    => $wifi ? $wifi['state'] : null,
-                'valve_position' => isset($trv['attributes']['pi_heating_demand']) ? (int)$trv['attributes']['pi_heating_demand'] : null,
+                'valve_position' => $valve ? (int)$valve['state'] : null,
                 'last_updated'   => isset($trv['last_updated']) ? $trv['last_updated'] : null
             );
         }
