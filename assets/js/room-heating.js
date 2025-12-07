@@ -312,6 +312,18 @@
                 text: room.room_name
             }));
 
+            // Temperature in header
+            if (room.avg_temperature !== null) {
+                const $temp = $('<div>', { class: 'hhrh-room-temp' });
+
+                $temp.append($('<span>', {
+                    class: 'hhrh-temp-value',
+                    text: room.avg_temperature + '°C'
+                }));
+
+                $header.append($temp);
+            }
+
             const $status = $('<div>', {
                 class: 'hhrh-room-status hhrh-status-' + room.heating_status
             });
@@ -328,23 +340,6 @@
 
             // Body
             const $body = $('<div>', { class: 'hhrh-room-card-body' });
-
-            // Temperature
-            if (room.avg_temperature !== null) {
-                const $temp = $('<div>', { class: 'hhrh-room-temp' });
-
-                $temp.append($('<span>', {
-                    class: 'hhrh-temp-value',
-                    text: room.avg_temperature + '°C'
-                }));
-
-                $temp.append($('<span>', {
-                    class: 'hhrh-temp-label',
-                    text: 'Average'
-                }));
-
-                $body.append($temp);
-            }
 
             // TRVs
             if (room.trvs && room.trvs.length > 0) {

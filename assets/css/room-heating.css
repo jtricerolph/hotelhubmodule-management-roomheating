@@ -224,7 +224,7 @@
     background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 16px;
+    padding: 12px;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -238,14 +238,14 @@
 .hhrh-room-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
     border-bottom: 1px solid #f3f4f6;
 }
 
 .hhrh-room-number {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     color: #1f2937;
 }
@@ -295,17 +295,17 @@
 .hhrh-room-card-body {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .hhrh-room-temp {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    gap: 4px;
 }
 
 .hhrh-temp-value {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
     color: #f97316;
 }
@@ -318,13 +318,13 @@
 .hhrh-room-trvs {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .hhrh-trv-item {
     display: flex;
     justify-content: space-between;
-    font-size: 14px;
+    font-size: 13px;
     color: #4b5563;
 }
 
@@ -338,10 +338,10 @@
 }
 
 .hhrh-room-state {
-    font-size: 12px;
+    font-size: 11px;
     color: #6b7280;
     text-transform: capitalize;
-    padding-top: 8px;
+    padding-top: 6px;
     border-top: 1px solid #f3f4f6;
 }
 
