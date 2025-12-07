@@ -425,7 +425,7 @@
 
                 // Add SVG icon
                 const batterySvg = HHRH.getBatterySVG(room.battery_status);
-                $batteryBadge.append(batterySvg);
+                $batteryBadge.append($(batterySvg));
 
                 if (room.battery_status !== 'ok' && room.min_battery !== null) {
                     $batteryBadge.append($('<span>', {
@@ -537,32 +537,36 @@
                     $header.append($title);
 
                     // Battery indicator in top right
-                    if (trv.battery !== null && trv.battery !== undefined) {
-                        const batteryLevel = parseInt(trv.battery);
-                        let batteryStatus = 'ok';
-                        let batteryClass = 'hhrh-trv-battery';
+                    if (trv.battery !== null && trv.battery !== undefined && trv.battery !== '') {
+                        const batteryLevel = parseInt(trv.battery, 10);
 
-                        // Determine battery status based on level
-                        if (batteryLevel <= 15) {
-                            batteryStatus = 'critical';
-                            batteryClass += ' hhrh-battery-critical';
-                        } else if (batteryLevel <= 30) {
-                            batteryStatus = 'warning';
-                            batteryClass += ' hhrh-battery-warning';
-                        } else {
-                            batteryClass += ' hhrh-battery-ok';
+                        // Only show if we have a valid battery level
+                        if (!isNaN(batteryLevel)) {
+                            let batteryStatus = 'ok';
+                            let batteryClass = 'hhrh-trv-battery';
+
+                            // Determine battery status based on level
+                            if (batteryLevel <= 15) {
+                                batteryStatus = 'critical';
+                                batteryClass += ' hhrh-battery-critical';
+                            } else if (batteryLevel <= 30) {
+                                batteryStatus = 'warning';
+                                batteryClass += ' hhrh-battery-warning';
+                            } else {
+                                batteryClass += ' hhrh-battery-ok';
+                            }
+
+                            const $battery = $('<div>', { class: batteryClass });
+
+                            // Add SVG icon
+                            const batterySvg = HHRH.getBatterySVG(batteryStatus);
+                            $battery.append($(batterySvg));
+
+                            $battery.append($('<span>', {
+                                text: batteryLevel + '%'
+                            }));
+                            $header.append($battery);
                         }
-
-                        const $battery = $('<div>', { class: batteryClass });
-
-                        // Add SVG icon
-                        const batterySvg = HHRH.getBatterySVG(batteryStatus);
-                        $battery.append(batterySvg);
-
-                        $battery.append($('<span>', {
-                            text: trv.battery + '%'
-                        }));
-                        $header.append($battery);
                     }
 
                     $control.append($header);
