@@ -507,21 +507,51 @@
 .hhrh-temp-control {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     margin-top: 12px;
 }
 
-.hhrh-temp-slider {
-    flex: 1;
+.hhrh-temp-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hhrh-temp-btn:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+.hhrh-temp-btn:active {
+    background: #d1d5db;
 }
 
 .hhrh-temp-input {
     width: 70px;
-    padding: 6px;
-    border: 1px solid #d1d5db;
+    padding: 8px;
+    border: 2px solid #d1d5db;
     border-radius: 6px;
     text-align: center;
     font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.hhrh-temp-input.hhrh-temp-modified {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #92400e;
 }
 
 .hhrh-btn-apply {

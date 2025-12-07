@@ -96,20 +96,38 @@
             // Temperature control
             $(document).on('click', '.hhrh-btn-apply', function() {
                 const entityId = $(this).data('entity-id');
-                const temperature = parseFloat($(this).closest('.hhrh-trv-control').find('.hhrh-temp-input').val());
-                HHRH.setTemperature(entityId, temperature);
+                const $input = $(this).closest('.hhrh-trv-control').find('.hhrh-temp-input');
+                const temperature = parseFloat($input.val());
+                HHRH.setTemperature(entityId, temperature, $input);
             });
 
-            // Temperature slider
-            $(document).on('input', '.hhrh-temp-slider', function() {
-                const value = $(this).val();
-                $(this).closest('.hhrh-trv-control').find('.hhrh-temp-input').val(value);
+            // Temperature decrease button
+            $(document).on('click', '.hhrh-temp-decrease', function() {
+                const $input = $(this).closest('.hhrh-temp-control').find('.hhrh-temp-input');
+                const currentValue = parseFloat($input.val());
+                const newValue = Math.max(5, currentValue - 0.5);
+                $input.val(newValue.toFixed(1)).trigger('change');
             });
 
-            // Temperature input
-            $(document).on('input', '.hhrh-temp-input', function() {
-                const value = $(this).val();
-                $(this).closest('.hhrh-trv-control').find('.hhrh-temp-slider').val(value);
+            // Temperature increase button
+            $(document).on('click', '.hhrh-temp-increase', function() {
+                const $input = $(this).closest('.hhrh-temp-control').find('.hhrh-temp-input');
+                const currentValue = parseFloat($input.val());
+                const newValue = Math.min(30, currentValue + 0.5);
+                $input.val(newValue.toFixed(1)).trigger('change');
+            });
+
+            // Temperature input - highlight when changed
+            $(document).on('input change', '.hhrh-temp-input', function() {
+                const $input = $(this);
+                const currentValue = parseFloat($input.val());
+                const originalValue = parseFloat($input.data('original-value'));
+
+                if (currentValue !== originalValue) {
+                    $input.addClass('hhrh-temp-modified');
+                } else {
+                    $input.removeClass('hhrh-temp-modified');
+                }
             });
 
             // Notification close
@@ -570,24 +588,34 @@
 
                         const currentTemp = trv.target_temp || 20;
 
-                        $tempControl.append($('<input>', {
-                            type: 'range',
-                            class: 'hhrh-temp-slider',
-                            min: 5,
-                            max: 30,
-                            step: 0.5,
-                            value: currentTemp
+                        // Decrease button
+                        $tempControl.append($('<button>', {
+                            class: 'hhrh-temp-btn hhrh-temp-decrease',
+                            type: 'button',
+                            'data-entity-id': trv.entity_id,
+                            text: '−'
                         }));
 
+                        // Temperature input
                         $tempControl.append($('<input>', {
                             type: 'number',
                             class: 'hhrh-temp-input',
                             min: 5,
                             max: 30,
                             step: 0.5,
-                            value: currentTemp
+                            value: currentTemp,
+                            'data-original-value': currentTemp
                         }));
 
+                        // Increase button
+                        $tempControl.append($('<button>', {
+                            class: 'hhrh-temp-btn hhrh-temp-increase',
+                            type: 'button',
+                            'data-entity-id': trv.entity_id,
+                            text: '+'
+                        }));
+
+                        // Apply button
                         $tempControl.append($('<button>', {
                             class: 'hhrh-btn-apply',
                             'data-entity-id': trv.entity_id,
@@ -651,7 +679,7 @@
         /**
          * Set temperature
          */
-        setTemperature: function(entityId, temperature) {
+        setTemperature: function(entityId, temperature, $input) {
             const $button = $('.hhrh-btn-apply[data-entity-id="' + entityId + '"]');
             $button.prop('disabled', true).addClass('hhrh-btn-loading');
 
@@ -714,6 +742,11 @@
                             // Update the displayed target temperature in the modal
                             const $control = $button.closest('.hhrh-trv-control');
                             $control.find('.hhrh-temp-display-value').last().text(actualTemp.toFixed(1) + '°C');
+
+                            // Reset the input to new value and remove modified class
+                            $input.val(actualTemp.toFixed(1));
+                            $input.data('original-value', actualTemp);
+                            $input.removeClass('hhrh-temp-modified');
 
                             // Show success notification
                             HHRH.showNotification(
