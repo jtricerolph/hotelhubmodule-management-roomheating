@@ -515,8 +515,6 @@
          * Render room details in modal
          */
         renderRoomDetails: function(data) {
-            console.log('[HHRH] Rendering room details:', data);
-
             // Update modal title with room name from response
             if (data.room_name) {
                 $('#hhrh-modal-title').text(data.room_name);
@@ -529,7 +527,6 @@
                 const $trvControls = $('<div>', { class: 'hhrh-trv-controls' });
 
                 data.trvs.forEach(trv => {
-                    console.log('[HHRH] TRV data:', trv);
                     const $control = $('<div>', { class: 'hhrh-trv-control' });
 
                     // Header
@@ -545,11 +542,8 @@
                     $header.append($title);
 
                     // Battery indicator in top right
-                    console.log('[HHRH] Battery check for', trv.location, '- Value:', trv.battery, 'Type:', typeof trv.battery);
-
                     if (trv.battery !== null && trv.battery !== undefined && trv.battery !== '') {
                         const batteryLevel = parseInt(trv.battery, 10);
-                        console.log('[HHRH] Parsed battery level:', batteryLevel, 'isNaN:', isNaN(batteryLevel));
 
                         // Only show if we have a valid battery level
                         if (!isNaN(batteryLevel)) {
@@ -802,7 +796,7 @@
                         );
                     }
                 });
-            }, 1500); // Wait 1.5 seconds for HA to process
+            }, 4000); // Wait 4 seconds for HA to process and TRV to acknowledge
         },
 
         /**

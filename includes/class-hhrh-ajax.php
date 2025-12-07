@@ -291,7 +291,7 @@ class HHRH_Ajax {
 
             // Get associated sensors (battery, wifi, etc.) - removed _trv from entity_id
             $trv_base = str_replace('climate.', '', $trv['entity_id']);
-            $battery = $ha_api->find_state($all_states, "sensor.{$trv_base}_battery");
+            $battery = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_battery");
             $wifi = $ha_api->find_state($all_states, "sensor.{$trv_base}_wifi_signal");
 
             $trv_details[] = array(

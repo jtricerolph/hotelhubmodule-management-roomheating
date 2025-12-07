@@ -167,7 +167,7 @@ class HHRH_Heartbeat {
         foreach ($trvs as $trv) {
             // Get battery level
             $trv_base = str_replace('climate.', '', $trv['entity_id']);
-            $battery_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_battery");
+            $battery_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_battery");
             $battery_level = $battery_entity ? (int)$battery_entity['state'] : null;
 
             if ($battery_level !== null && $battery_level < $min_battery) {
