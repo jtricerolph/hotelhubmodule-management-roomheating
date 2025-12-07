@@ -527,6 +527,13 @@
                 const $trvControls = $('<div>', { class: 'hhrh-trv-controls' });
 
                 data.trvs.forEach(trv => {
+                    console.log('[HHRH] TRV Data:', {
+                        location: trv.location,
+                        wifi_signal: trv.wifi_signal,
+                        valve_position: trv.valve_position,
+                        battery: trv.battery
+                    });
+
                     // Add heating class if valve is open
                     let controlClass = 'hhrh-trv-control';
                     if (trv.valve_position && trv.valve_position > 0) {
