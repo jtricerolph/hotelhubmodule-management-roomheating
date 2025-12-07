@@ -89,6 +89,9 @@ class HHRH_Heartbeat {
         $integration = hha()->integrations->get_settings($location_id, 'newbook');
         $categories = isset($integration['categories_sort']) ? $integration['categories_sort'] : array();
 
+        // Get settings for battery thresholds
+        $settings = HHRH_Settings::get($location_id);
+
         // Get Home Assistant API client
         $ha_api = new HHRH_HA_API($location_id);
 
@@ -112,7 +115,7 @@ class HHRH_Heartbeat {
                     continue;
                 }
 
-                $room_update = $this->get_room_update($site, $all_states, $ha_api);
+                $room_update = $this->get_room_update($site, $all_states, $ha_api, $settings);
 
                 if ($room_update) {
                     $updates[] = $room_update;
@@ -129,17 +132,19 @@ class HHRH_Heartbeat {
      * @param array $site Site data
      * @param array $all_states All HA states
      * @param HHRH_HA_API $ha_api HA API client
+     * @param array $settings Settings with battery thresholds
      * @return array|null Room update or null
      */
-    private function get_room_update($site, $all_states, $ha_api) {
+    private function get_room_update($site, $all_states, $ha_api, $settings) {
         $normalized_name = $ha_api->normalize_site_name($site['site_name']);
+        $room_number = $ha_api->extract_room_number($site['site_name']);
 
         // Get key entities
         $should_heat = $ha_api->find_state($all_states, "binary_sensor.{$normalized_name}_should_heat");
         $room_state = $ha_api->find_state($all_states, "sensor.{$normalized_name}_room_state");
 
-        // Get TRVs
-        $trvs = $ha_api->find_trvs($all_states, $site['site_id']);
+        // Get TRVs using room number from site_name
+        $trvs = $ha_api->find_trvs($all_states, $room_number);
 
         // Determine heating status
         $heating_status = 'idle';
@@ -154,22 +159,49 @@ class HHRH_Heartbeat {
         // Calculate average temperature
         $avg_temp = $ha_api->calculate_avg_temp($trvs);
 
-        // Build TRV data
+        // Build TRV data and check battery levels
         $trv_data = array();
+        $battery_status = 'ok';
+        $min_battery = 100;
+
         foreach ($trvs as $trv) {
+            // Get battery level
+            $trv_base = str_replace('climate.', '', $trv['entity_id']);
+            $battery_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_battery");
+            $battery_level = $battery_entity ? (int)$battery_entity['state'] : null;
+
+            if ($battery_level !== null && $battery_level < $min_battery) {
+                $min_battery = $battery_level;
+            }
+
             $trv_data[] = array(
                 'entity_id'    => $trv['entity_id'],
                 'current_temp' => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
-                'target_temp'  => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null
+                'target_temp'  => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
+                'battery'      => $battery_level
             );
         }
 
+        // Determine battery status based on thresholds
+        if ($min_battery < 100) {
+            $critical_threshold = isset($settings['battery_critical_percent']) ? (int)$settings['battery_critical_percent'] : 15;
+            $warning_threshold = isset($settings['battery_warning_percent']) ? (int)$settings['battery_warning_percent'] : 30;
+
+            if ($min_battery <= $critical_threshold) {
+                $battery_status = 'critical';
+            } elseif ($min_battery <= $warning_threshold) {
+                $battery_status = 'warning';
+            }
+        }
+
         return array(
-            'room_id'        => $site['site_id'],
-            'heating_status' => $heating_status,
-            'room_state'     => $room_state ? $room_state['state'] : null,
+            'room_id'         => $site['site_id'],
+            'heating_status'  => $heating_status,
+            'room_state'      => $room_state ? $room_state['state'] : null,
             'avg_temperature' => $avg_temp,
-            'trvs'           => $trv_data
+            'battery_status'  => $battery_status,
+            'min_battery'     => $min_battery < 100 ? $min_battery : null,
+            'trvs'            => $trv_data
         );
     }
 }

@@ -201,6 +201,22 @@ class HHRH_Display {
                 </div>
             </div>
         </div>
+
+        <!-- Notification Modal -->
+        <div class="hhrh-notification-overlay" id="hhrh-notification" style="display:none;">
+            <div class="hhrh-notification">
+                <div class="hhrh-notification-icon" id="hhrh-notification-icon">
+                    <span class="material-symbols-outlined"></span>
+                </div>
+                <div class="hhrh-notification-content">
+                    <h3 id="hhrh-notification-title"></h3>
+                    <p id="hhrh-notification-message"></p>
+                </div>
+                <button class="hhrh-notification-close" id="hhrh-notification-close" type="button">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        </div>
         <?php
     }
 

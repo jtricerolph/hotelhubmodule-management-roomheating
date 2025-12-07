@@ -111,6 +111,18 @@
                 const value = $(this).val();
                 $(this).closest('.hhrh-trv-control').find('.hhrh-temp-slider').val(value);
             });
+
+            // Notification close
+            $(document).on('click', '#hhrh-notification-close', function() {
+                HHRH.hideNotification();
+            });
+
+            // Close notification when clicking overlay
+            $(document).on('click', '#hhrh-notification', function(e) {
+                if (e.target === this) {
+                    HHRH.hideNotification();
+                }
+            });
         },
 
         /**
@@ -640,6 +652,9 @@
          * Set temperature
          */
         setTemperature: function(entityId, temperature) {
+            const $button = $('.hhrh-btn-apply[data-entity-id="' + entityId + '"]');
+            $button.prop('disabled', true).text('Applying...');
+
             $.ajax({
                 url: hhrhData.ajaxUrl,
                 type: 'POST',
@@ -652,16 +667,111 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        alert(hhrhData.strings.tempUpdated);
-                        HHRH.loadRooms(); // Refresh data
+                        // Verify the temperature was set by checking HA state
+                        HHRH.verifyTemperatureChange(entityId, $button);
                     } else {
-                        alert(response.data.message || hhrhData.strings.tempUpdateFailed);
+                        $button.prop('disabled', false).text('Apply');
+                        HHRH.showNotification(
+                            'error',
+                            'Update Failed',
+                            response.data.message || hhrhData.strings.tempUpdateFailed
+                        );
                     }
                 },
                 error: function() {
-                    alert(hhrhData.strings.tempUpdateFailed);
+                    $button.prop('disabled', false).text('Apply');
+                    HHRH.showNotification(
+                        'error',
+                        'Update Failed',
+                        hhrhData.strings.tempUpdateFailed
+                    );
                 }
             });
+        },
+
+        /**
+         * Verify temperature change was successful
+         */
+        verifyTemperatureChange: function(entityId, $button) {
+            // Wait a moment for HA to process the change
+            setTimeout(function() {
+                // Get current state from HA
+                $.ajax({
+                    url: hhrhData.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'hhrh_verify_temperature',
+                        nonce: hhrhData.nonce,
+                        entity_id: entityId,
+                        location_id: hhrhData.locationId
+                    },
+                    success: function(response) {
+                        $button.prop('disabled', false).text('Apply');
+
+                        if (response.success && response.data.temperature) {
+                            const actualTemp = parseFloat(response.data.temperature);
+
+                            // Update the displayed target temperature in the modal
+                            const $control = $button.closest('.hhrh-trv-control');
+                            $control.find('.hhrh-temp-display-value').last().text(actualTemp.toFixed(1) + '°C');
+
+                            // Show success notification
+                            HHRH.showNotification(
+                                'success',
+                                'Temperature Updated',
+                                'Target temperature set to ' + actualTemp.toFixed(1) + '°C'
+                            );
+
+                            // Refresh main room list
+                            HHRH.loadRooms();
+                        } else {
+                            HHRH.showNotification(
+                                'warning',
+                                'Verification Failed',
+                                'Temperature may have been updated, but verification failed. Please check the device.'
+                            );
+                        }
+                    },
+                    error: function() {
+                        $button.prop('disabled', false).text('Apply');
+                        HHRH.showNotification(
+                            'warning',
+                            'Verification Failed',
+                            'Temperature update sent, but verification failed. Please check the device.'
+                        );
+                    }
+                });
+            }, 1500); // Wait 1.5 seconds for HA to process
+        },
+
+        /**
+         * Show notification modal
+         */
+        showNotification: function(type, title, message) {
+            const iconMap = {
+                'success': 'check_circle',
+                'error': 'error',
+                'warning': 'warning'
+            };
+
+            $('#hhrh-notification-icon').removeClass('success error warning').addClass(type);
+            $('#hhrh-notification-icon .material-symbols-outlined').text(iconMap[type] || 'info');
+            $('#hhrh-notification-title').text(title);
+            $('#hhrh-notification-message').text(message);
+            $('#hhrh-notification').fadeIn(200);
+
+            // Auto-hide after 4 seconds for success, 6 seconds for others
+            const timeout = type === 'success' ? 4000 : 6000;
+            setTimeout(function() {
+                HHRH.hideNotification();
+            }, timeout);
+        },
+
+        /**
+         * Hide notification modal
+         */
+        hideNotification: function() {
+            $('#hhrh-notification').fadeOut(200);
         },
 
         /**

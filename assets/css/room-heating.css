@@ -606,3 +606,101 @@
 .hhrh-battery-percent {
     font-weight: 600;
 }
+
+/* Notification Modal */
+.hhrh-notification-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.hhrh-notification {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 15px;
+    position: relative;
+    animation: hhrh-notification-slide-in 0.3s ease-out;
+}
+
+@keyframes hhrh-notification-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.hhrh-notification-icon {
+    flex-shrink: 0;
+}
+
+.hhrh-notification-icon .material-symbols-outlined {
+    font-size: 48px;
+}
+
+.hhrh-notification-icon.success .material-symbols-outlined {
+    color: #16a34a;
+}
+
+.hhrh-notification-icon.error .material-symbols-outlined {
+    color: #dc2626;
+}
+
+.hhrh-notification-icon.warning .material-symbols-outlined {
+    color: #f59e0b;
+}
+
+.hhrh-notification-content {
+    flex: 1;
+}
+
+.hhrh-notification-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+.hhrh-notification-content p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.hhrh-notification-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.hhrh-notification-close:hover {
+    background: #f3f4f6;
+}
+
+.hhrh-notification-close .material-symbols-outlined {
+    font-size: 20px;
+    color: #6b7280;
+}

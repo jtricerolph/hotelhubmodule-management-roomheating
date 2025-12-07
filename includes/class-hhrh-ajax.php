@@ -45,6 +45,7 @@ class HHRH_Ajax {
         add_action('wp_ajax_hhrh_get_rooms', array($this, 'get_rooms'));
         add_action('wp_ajax_hhrh_get_room_details', array($this, 'get_room_details'));
         add_action('wp_ajax_hhrh_set_temperature', array($this, 'set_temperature'));
+        add_action('wp_ajax_hhrh_verify_temperature', array($this, 'verify_temperature'));
 
         // Admin AJAX actions
         add_action('wp_ajax_hhrh_test_ha_connection', array($this, 'test_ha_connection'));
@@ -367,6 +368,62 @@ class HHRH_Ajax {
 
         wp_send_json_success(array(
             'message' => __('Temperature updated successfully.', 'hhrh')
+        ));
+    }
+
+    /**
+     * Verify temperature was set correctly
+     */
+    public function verify_temperature() {
+        check_ajax_referer('hhrh_nonce', 'nonce');
+
+        // Check permission
+        if (!wfa_user_can('heating_view')) {
+            wp_send_json_error(array(
+                'message' => __('You do not have permission to view room heating data.', 'hhrh')
+            ));
+        }
+
+        $entity_id = isset($_POST['entity_id']) ? sanitize_text_field($_POST['entity_id']) : '';
+        $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : hha_get_current_location();
+
+        if (empty($entity_id)) {
+            wp_send_json_error(array(
+                'message' => __('Invalid parameters.', 'hhrh')
+            ));
+        }
+
+        // Get current state from Home Assistant
+        $ha_api = new HHRH_HA_API($location_id);
+        $all_states = $ha_api->get_states(false); // Don't use cache
+
+        if (is_wp_error($all_states)) {
+            wp_send_json_error(array(
+                'message' => $all_states->get_error_message()
+            ));
+        }
+
+        // Find the specific entity
+        $entity = $ha_api->find_state($all_states, $entity_id);
+
+        if (!$entity) {
+            wp_send_json_error(array(
+                'message' => __('Entity not found.', 'hhrh')
+            ));
+        }
+
+        // Get target temperature from attributes
+        $target_temp = isset($entity['attributes']['temperature']) ? (float)$entity['attributes']['temperature'] : null;
+
+        if ($target_temp === null) {
+            wp_send_json_error(array(
+                'message' => __('Temperature attribute not found.', 'hhrh')
+            ));
+        }
+
+        wp_send_json_success(array(
+            'temperature' => $target_temp,
+            'entity_id'   => $entity_id
         ));
     }
 
