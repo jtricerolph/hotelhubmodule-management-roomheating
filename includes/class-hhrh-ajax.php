@@ -66,6 +66,9 @@ class HHRH_Ajax {
 
         $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : hha_get_current_location();
 
+        // Get settings for battery thresholds
+        $settings = HHRH_Settings::get($location_id);
+
         // Get cached sites from hotel hub app
         $integration = hha()->integrations->get_settings($location_id, 'newbook');
         $categories = isset($integration['categories_sort']) ? $integration['categories_sort'] : array();
@@ -95,7 +98,7 @@ class HHRH_Ajax {
                     continue;
                 }
 
-                $room_data = $this->process_room($site, $category, $all_states, $ha_api);
+                $room_data = $this->process_room($site, $category, $all_states, $ha_api, $settings);
 
                 if ($room_data) {
                     $rooms[] = $room_data;
@@ -116,9 +119,10 @@ class HHRH_Ajax {
      * @param array $category Category data
      * @param array $all_states All HA states
      * @param HHRH_HA_API $ha_api HA API client
+     * @param array $settings Settings with battery thresholds
      * @return array|null Room data or null on error
      */
-    private function process_room($site, $category, $all_states, $ha_api) {
+    private function process_room($site, $category, $all_states, $ha_api, $settings) {
         $normalized_name = $ha_api->normalize_site_name($site['site_name']);
         $room_number = $ha_api->extract_room_number($site['site_name']);
 
@@ -142,8 +146,11 @@ class HHRH_Ajax {
         // Calculate average temperature
         $avg_temp = $ha_api->calculate_avg_temp($trvs);
 
-        // Process TRV data
+        // Process TRV data and check battery levels
         $trv_data = array();
+        $battery_status = 'ok'; // ok, warning, critical
+        $min_battery = 100;
+
         foreach ($trvs as $trv) {
             // Extract location from entity ID (e.g., climate.room_101_bedroom -> Bedroom)
             if (preg_match('/climate\.room_\d+_(.+)$/', $trv['entity_id'], $matches)) {
@@ -152,26 +159,50 @@ class HHRH_Ajax {
                 $location = 'Unknown';
             }
 
+            // Get battery level
+            $trv_base = str_replace('climate.', '', $trv['entity_id']);
+            $battery_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_battery");
+            $battery_level = $battery_entity ? (int)$battery_entity['state'] : null;
+
+            if ($battery_level !== null && $battery_level < $min_battery) {
+                $min_battery = $battery_level;
+            }
+
             $trv_data[] = array(
                 'entity_id'    => $trv['entity_id'],
                 'location'     => $location,
                 'current_temp' => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
                 'target_temp'  => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
-                'hvac_mode'    => isset($trv['state']) ? $trv['state'] : 'unknown'
+                'hvac_mode'    => isset($trv['state']) ? $trv['state'] : 'unknown',
+                'battery'      => $battery_level
             );
         }
 
+        // Determine battery status based on thresholds
+        if ($min_battery < 100) {
+            $critical_threshold = isset($settings['battery_critical_percent']) ? (int)$settings['battery_critical_percent'] : 15;
+            $warning_threshold = isset($settings['battery_warning_percent']) ? (int)$settings['battery_warning_percent'] : 30;
+
+            if ($min_battery <= $critical_threshold) {
+                $battery_status = 'critical';
+            } elseif ($min_battery <= $warning_threshold) {
+                $battery_status = 'warning';
+            }
+        }
+
         return array(
-            'room_id'        => $site['site_id'],
-            'room_name'      => $site['site_name'],
-            'category'       => $category['name'],
-            'category_id'    => $category['id'],
-            'category_order' => isset($category['order']) ? (int)$category['order'] : 0,
-            'site_order'     => isset($site['order']) ? (int)$site['order'] : 0,
-            'heating_status' => $heating_status,
-            'room_state'     => $room_state_entity ? $room_state_entity['state'] : null,
+            'room_id'         => $site['site_id'],
+            'room_name'       => $site['site_name'],
+            'category'        => $category['name'],
+            'category_id'     => $category['id'],
+            'category_order'  => isset($category['order']) ? (int)$category['order'] : 0,
+            'site_order'      => isset($site['order']) ? (int)$site['order'] : 0,
+            'heating_status'  => $heating_status,
+            'room_state'      => $room_state_entity ? $room_state_entity['state'] : null,
             'avg_temperature' => $avg_temp,
-            'trvs'           => $trv_data
+            'battery_status'  => $battery_status,
+            'min_battery'     => $min_battery < 100 ? $min_battery : null,
+            'trvs'            => $trv_data
         );
     }
 
@@ -385,12 +416,14 @@ class HHRH_Ajax {
         $location_id = isset($_POST['hotel_id']) ? (int)$_POST['hotel_id'] : 0;
 
         $settings = array(
-            'enabled'              => isset($_POST['enabled']),
-            'ha_url'               => isset($_POST['ha_url']) ? $_POST['ha_url'] : '',
-            'ha_token'             => isset($_POST['ha_token']) ? $_POST['ha_token'] : '',
-            'refresh_interval'     => isset($_POST['refresh_interval']) ? (int)$_POST['refresh_interval'] : 30,
-            'show_booking_info'    => isset($_POST['show_booking_info']),
-            'alert_threshold_temp' => isset($_POST['alert_threshold_temp']) ? (float)$_POST['alert_threshold_temp'] : 10
+            'enabled'                  => isset($_POST['enabled']),
+            'ha_url'                   => isset($_POST['ha_url']) ? $_POST['ha_url'] : '',
+            'ha_token'                 => isset($_POST['ha_token']) ? $_POST['ha_token'] : '',
+            'refresh_interval'         => isset($_POST['refresh_interval']) ? (int)$_POST['refresh_interval'] : 30,
+            'show_booking_info'        => isset($_POST['show_booking_info']),
+            'alert_threshold_temp'     => isset($_POST['alert_threshold_temp']) ? (float)$_POST['alert_threshold_temp'] : 10,
+            'battery_warning_percent'  => isset($_POST['battery_warning_percent']) ? (int)$_POST['battery_warning_percent'] : 30,
+            'battery_critical_percent' => isset($_POST['battery_critical_percent']) ? (int)$_POST['battery_critical_percent'] : 15
         );
 
         // Validate settings

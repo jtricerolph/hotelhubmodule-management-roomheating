@@ -163,6 +163,52 @@ if (!defined('ABSPATH')) {
                         </p>
                     </td>
                 </tr>
+
+                <!-- Battery Warning Threshold -->
+                <tr>
+                    <th scope="row">
+                        <label for="hhrh_battery_warning_percent">
+                            <?php _e('Battery Warning Level', 'hhrh'); ?>
+                        </label>
+                    </th>
+                    <td>
+                        <input type="number"
+                               id="hhrh_battery_warning_percent"
+                               name="battery_warning_percent"
+                               value="<?php echo esc_attr($settings['battery_warning_percent']); ?>"
+                               min="10"
+                               max="50"
+                               step="1"
+                               class="small-text">
+                        <span>%</span>
+                        <p class="description">
+                            <?php _e('Show amber warning if any TRV battery falls below this level (10-50%).', 'hhrh'); ?>
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Battery Critical Threshold -->
+                <tr>
+                    <th scope="row">
+                        <label for="hhrh_battery_critical_percent">
+                            <?php _e('Battery Critical Level', 'hhrh'); ?>
+                        </label>
+                    </th>
+                    <td>
+                        <input type="number"
+                               id="hhrh_battery_critical_percent"
+                               name="battery_critical_percent"
+                               value="<?php echo esc_attr($settings['battery_critical_percent']); ?>"
+                               min="5"
+                               max="30"
+                               step="1"
+                               class="small-text">
+                        <span>%</span>
+                        <p class="description">
+                            <?php _e('Show red alert if any TRV battery falls below this level (5-30%).', 'hhrh'); ?>
+                        </p>
+                    </td>
+                </tr>
             </table>
 
             <?php submit_button(__('Save Settings', 'hhrh'), 'primary', 'submit', true); ?>

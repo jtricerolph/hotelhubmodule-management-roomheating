@@ -120,12 +120,14 @@ class HHRH_Settings {
      */
     public static function get_defaults() {
         return array(
-            'enabled'               => false,
-            'ha_url'                => '',
-            'ha_token'              => '',
-            'refresh_interval'      => 30,
-            'show_booking_info'     => false,
-            'alert_threshold_temp'  => 10
+            'enabled'                  => false,
+            'ha_url'                   => '',
+            'ha_token'                 => '',
+            'refresh_interval'         => 30,
+            'show_booking_info'        => false,
+            'alert_threshold_temp'     => 10,
+            'battery_warning_percent'  => 30,
+            'battery_critical_percent' => 15
         );
     }
 
@@ -164,6 +166,18 @@ class HHRH_Settings {
         if (isset($settings['alert_threshold_temp'])) {
             $threshold = (float)$settings['alert_threshold_temp'];
             $validated['alert_threshold_temp'] = max(5, min(20, $threshold));
+        }
+
+        // Battery warning percent (10-50%)
+        if (isset($settings['battery_warning_percent'])) {
+            $percent = (int)$settings['battery_warning_percent'];
+            $validated['battery_warning_percent'] = max(10, min(50, $percent));
+        }
+
+        // Battery critical percent (5-30%)
+        if (isset($settings['battery_critical_percent'])) {
+            $percent = (int)$settings['battery_critical_percent'];
+            $validated['battery_critical_percent'] = max(5, min(30, $percent));
         }
 
         return $validated;
