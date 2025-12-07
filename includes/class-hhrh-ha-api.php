@@ -289,34 +289,50 @@ class HHRH_HA_API {
      * Find TRVs for a specific room
      *
      * @param array $states All states
-     * @param string $room_id Room ID (e.g., '101')
+     * @param string $room_number Room number (e.g., '101')
      * @return array Array of TRV entities
      */
-    public function find_trvs($states, $room_id) {
+    public function find_trvs($states, $room_number) {
         $trvs = array();
-        $pattern = '/^climate\.room_' . preg_quote($room_id, '/') . '_.*_trv$/';
+        // Match climate entities for this room (removed _trv requirement)
+        $pattern = '/^climate\.room_' . preg_quote($room_number, '/') . '_/';
 
         // Debug: Log what we're searching for
-        error_log(sprintf('[HHRH] Looking for TRVs with pattern: %s (room_id: %s)', $pattern, $room_id));
+        error_log(sprintf('[HHRH] Looking for TRVs with pattern: %s (room_number: %s)', $pattern, $room_number));
 
         // Debug: Log first few climate entities we find
         $climate_entities = array();
         foreach ($states as $state) {
             if (isset($state['entity_id']) && strpos($state['entity_id'], 'climate.') === 0) {
                 $climate_entities[] = $state['entity_id'];
-                if (count($climate_entities) <= 5) {
+                if (count($climate_entities) <= 10) {
                     error_log(sprintf('[HHRH] Found climate entity: %s', $state['entity_id']));
                 }
             }
 
             if (isset($state['entity_id']) && preg_match($pattern, $state['entity_id'])) {
                 $trvs[] = $state;
+                error_log(sprintf('[HHRH] MATCHED TRV: %s', $state['entity_id']));
             }
         }
 
-        error_log(sprintf('[HHRH] Found %d TRVs for room %s out of %d total climate entities', count($trvs), $room_id, count($climate_entities)));
+        error_log(sprintf('[HHRH] Found %d TRVs for room %s out of %d total climate entities', count($trvs), $room_number, count($climate_entities)));
 
         return $trvs;
+    }
+
+    /**
+     * Extract room number from site name
+     *
+     * @param string $site_name Site name (e.g., "Room 101", "101", etc.)
+     * @return string Room number (e.g., "101")
+     */
+    public function extract_room_number($site_name) {
+        // Extract all digits from site name
+        if (preg_match('/\d+/', $site_name, $matches)) {
+            return $matches[0];
+        }
+        return '';
     }
 
     /**

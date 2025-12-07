@@ -120,13 +120,14 @@ class HHRH_Ajax {
      */
     private function process_room($site, $category, $all_states, $ha_api) {
         $normalized_name = $ha_api->normalize_site_name($site['site_name']);
+        $room_number = $ha_api->extract_room_number($site['site_name']);
 
         // Get HA entities for this room
         $should_heat_entity = $ha_api->find_state($all_states, "binary_sensor.{$normalized_name}_should_heat");
         $room_state_entity = $ha_api->find_state($all_states, "sensor.{$normalized_name}_room_state");
 
-        // Find TRVs
-        $trvs = $ha_api->find_trvs($all_states, $site['site_id']);
+        // Find TRVs using room number from site_name
+        $trvs = $ha_api->find_trvs($all_states, $room_number);
 
         // Determine heating status
         $heating_status = 'idle';
@@ -144,8 +145,8 @@ class HHRH_Ajax {
         // Process TRV data
         $trv_data = array();
         foreach ($trvs as $trv) {
-            // Extract location from entity ID (e.g., climate.room_101_bedroom_trv -> Bedroom)
-            if (preg_match('/climate\.room_\d+_(.+)_trv$/', $trv['entity_id'], $matches)) {
+            // Extract location from entity ID (e.g., climate.room_101_bedroom -> Bedroom)
+            if (preg_match('/climate\.room_\d+_(.+)$/', $trv['entity_id'], $matches)) {
                 $location = ucfirst(str_replace('_', ' ', $matches[1]));
             } else {
                 $location = 'Unknown';
@@ -225,6 +226,7 @@ class HHRH_Ajax {
         // Get HA data
         $ha_api = new HHRH_HA_API($location_id);
         $normalized_name = $ha_api->normalize_site_name($site_name);
+        $room_number = $ha_api->extract_room_number($site_name);
 
         $all_states = $ha_api->get_states(false); // Don't use cache for modal
 
@@ -243,22 +245,22 @@ class HHRH_Ajax {
         $heating_start = $ha_api->find_state($all_states, "sensor.{$normalized_name}_heating_start_time");
         $cooling_start = $ha_api->find_state($all_states, "sensor.{$normalized_name}_cooling_start_time");
 
-        // Get TRVs with full details
-        $trvs = $ha_api->find_trvs($all_states, $room_id);
+        // Get TRVs with full details using room number from site_name
+        $trvs = $ha_api->find_trvs($all_states, $room_number);
         $trv_details = array();
 
         foreach ($trvs as $trv) {
-            // Extract location
-            if (preg_match('/climate\.room_\d+_(.+)_trv$/', $trv['entity_id'], $matches)) {
+            // Extract location (removed _trv requirement)
+            if (preg_match('/climate\.room_\d+_(.+)$/', $trv['entity_id'], $matches)) {
                 $location = ucfirst(str_replace('_', ' ', $matches[1]));
             } else {
                 $location = 'Unknown';
             }
 
-            // Get associated sensors (battery, wifi, etc.)
-            $trv_base = str_replace('climate.', '', str_replace('_trv', '', $trv['entity_id']));
-            $battery = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_battery");
-            $wifi = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_wifi_signal");
+            // Get associated sensors (battery, wifi, etc.) - removed _trv from entity_id
+            $trv_base = str_replace('climate.', '', $trv['entity_id']);
+            $battery = $ha_api->find_state($all_states, "sensor.{$trv_base}_battery");
+            $wifi = $ha_api->find_state($all_states, "sensor.{$trv_base}_wifi_signal");
 
             $trv_details[] = array(
                 'entity_id'    => $trv['entity_id'],
