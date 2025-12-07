@@ -46,7 +46,6 @@ class HotelHub_Management_RoomHeating {
      * Constructor
      */
     private function __construct() {
-        $this->check_dependencies();
         $this->load_dependencies();
         $this->init_hooks();
     }
@@ -111,8 +110,8 @@ class HotelHub_Management_RoomHeating {
      * Activation hook
      */
     public function activate() {
-        // Check dependencies
-        if (!$this->check_dependencies()) {
+        // Check if dependencies are available
+        if (!function_exists('hha') || !function_exists('wfa_user_can')) {
             deactivate_plugins(plugin_basename(__FILE__));
             wp_die(
                 __('This plugin requires Hotel Hub App and Workforce Authentication plugins to be installed and activated.', 'hhrh'),
