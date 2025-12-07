@@ -350,8 +350,15 @@ class HHRH_Ajax {
         }
 
         $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : 0;
+        $ha_url = isset($_POST['ha_url']) ? sanitize_text_field($_POST['ha_url']) : '';
+        $ha_token = isset($_POST['ha_token']) ? sanitize_text_field($_POST['ha_token']) : '';
 
+        // Create HA API instance and set credentials from form
         $ha_api = new HHRH_HA_API($location_id);
+        if (!empty($ha_url) && !empty($ha_token)) {
+            $ha_api->set_credentials($ha_url, $ha_token);
+        }
+
         $result = $ha_api->test_connection();
 
         if ($result['success']) {
@@ -365,7 +372,7 @@ class HHRH_Ajax {
      * Save settings (admin)
      */
     public function save_settings() {
-        check_ajax_referer('hhrh_settings_nonce', 'hhrh_settings_nonce');
+        check_ajax_referer('hhrh_save_settings', 'hhrh_settings_nonce');
 
         if (!current_user_can('manage_options')) {
             wp_send_json_error(array(

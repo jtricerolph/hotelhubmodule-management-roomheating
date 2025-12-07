@@ -75,6 +75,17 @@ class HHRH_HA_API {
     }
 
     /**
+     * Set credentials for testing
+     *
+     * @param string $url Home Assistant URL
+     * @param string $token Access token
+     */
+    public function set_credentials($url, $token) {
+        $this->ha_url = rtrim($url, '/');
+        $this->token = $token;
+    }
+
+    /**
      * Test connection to Home Assistant
      *
      * @return array Result array with success/error
