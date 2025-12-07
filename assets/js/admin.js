@@ -28,11 +28,6 @@
                 e.preventDefault();
                 HHRHAdmin.saveSettings();
             });
-
-            // Load system status if configured
-            if ($('#hhrh-system-status-content').length > 0) {
-                HHRHAdmin.loadSystemStatus();
-            }
         },
 
         /**
@@ -121,13 +116,6 @@
                     setTimeout(function() {
                         $message.slideUp();
                     }, 3000);
-
-                    // Reload system status if settings saved successfully
-                    if (response.success && $('#hhrh-system-status-content').length > 0) {
-                        setTimeout(function() {
-                            HHRHAdmin.loadSystemStatus();
-                        }, 500);
-                    }
                 },
                 error: function() {
                     $message.removeClass('notice-success').addClass('notice-error');
@@ -142,32 +130,6 @@
                     $submitBtn.prop('disabled', false);
                 }
             });
-        },
-
-        /**
-         * Load system status
-         */
-        loadSystemStatus: function() {
-            const hotelId = $('input[name="hotel_id"]').val();
-
-            $('#hhrh-system-status-content').html('<p><em>Loading system status...</em></p>');
-
-            // This would call an AJAX endpoint to get HA system status
-            // For now, we'll show a placeholder
-            setTimeout(function() {
-                const html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;">' +
-                    '<div style="padding:15px;background:#fff;border-radius:6px;border:1px solid #ddd;">' +
-                    '<div style="font-size:12px;color:#666;margin-bottom:5px;">Connection</div>' +
-                    '<div style="font-size:20px;font-weight:600;color:#16a34a;">Connected</div>' +
-                    '</div>' +
-                    '<div style="padding:15px;background:#fff;border-radius:6px;border:1px solid #ddd;">' +
-                    '<div style="font-size:12px;color:#666;margin-bottom:5px;">Last Update</div>' +
-                    '<div style="font-size:14px;font-weight:500;">Just now</div>' +
-                    '</div>' +
-                    '</div>';
-
-                $('#hhrh-system-status-content').html(html);
-            }, 500);
         },
 
         /**

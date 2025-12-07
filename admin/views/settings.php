@@ -169,16 +169,6 @@ if (!defined('ABSPATH')) {
 
             <div id="hhrh-save-message" class="notice" style="display:none;"></div>
         </form>
-
-        <!-- System Status -->
-        <?php if (!empty($settings['ha_url']) && !empty($settings['ha_token'])) : ?>
-            <div class="hhrh-system-status">
-                <h2><?php _e('System Status', 'hhrh'); ?></h2>
-                <div id="hhrh-system-status-content">
-                    <p><em><?php _e('Loading system status...', 'hhrh'); ?></em></p>
-                </div>
-            </div>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -261,16 +251,5 @@ if (!defined('ABSPATH')) {
 
 #hhrh-connection-status.error {
     color: #dc3232;
-}
-
-.hhrh-system-status {
-    margin-top: 30px;
-    padding: 20px;
-    background: #f0f0f1;
-    border-radius: 4px;
-}
-
-.hhrh-system-status h2 {
-    margin-top: 0;
 }
 </style>
