@@ -296,11 +296,25 @@ class HHRH_HA_API {
         $trvs = array();
         $pattern = '/^climate\.room_' . preg_quote($room_id, '/') . '_.*_trv$/';
 
+        // Debug: Log what we're searching for
+        error_log(sprintf('[HHRH] Looking for TRVs with pattern: %s (room_id: %s)', $pattern, $room_id));
+
+        // Debug: Log first few climate entities we find
+        $climate_entities = array();
         foreach ($states as $state) {
+            if (isset($state['entity_id']) && strpos($state['entity_id'], 'climate.') === 0) {
+                $climate_entities[] = $state['entity_id'];
+                if (count($climate_entities) <= 5) {
+                    error_log(sprintf('[HHRH] Found climate entity: %s', $state['entity_id']));
+                }
+            }
+
             if (isset($state['entity_id']) && preg_match($pattern, $state['entity_id'])) {
                 $trvs[] = $state;
             }
         }
+
+        error_log(sprintf('[HHRH] Found %d TRVs for room %s out of %d total climate entities', count($trvs), $room_id, count($climate_entities)));
 
         return $trvs;
     }

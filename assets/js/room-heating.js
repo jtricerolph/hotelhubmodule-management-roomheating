@@ -59,8 +59,14 @@
                 HHRH.openRoomModal(roomId);
             });
 
-            // Modal close
-            $('#hhrh-modal-close, #hhrh-modal').on('click', function(e) {
+            // Modal close - use delegation since modal is in DOM
+            $(document).on('click', '#hhrh-modal-close', function(e) {
+                e.preventDefault();
+                HHRH.closeModal();
+            });
+
+            // Close modal when clicking overlay
+            $(document).on('click', '#hhrh-modal', function(e) {
                 if (e.target === this) {
                     HHRH.closeModal();
                 }
