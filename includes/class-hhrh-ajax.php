@@ -160,22 +160,26 @@ class HHRH_Ajax {
                 $location = 'Unknown';
             }
 
-            // Get battery level
+            // Get battery level and valve position
             $trv_base = str_replace('climate.', '', $trv['entity_id']);
-            $battery_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_battery");
+            $battery_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_battery");
             $battery_level = $battery_entity ? (int)$battery_entity['state'] : null;
+
+            $valve_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_valve_position");
+            $valve_position = $valve_entity ? (int)$valve_entity['state'] : null;
 
             if ($battery_level !== null && $battery_level < $min_battery) {
                 $min_battery = $battery_level;
             }
 
             $trv_data[] = array(
-                'entity_id'    => $trv['entity_id'],
-                'location'     => $location,
-                'current_temp' => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
-                'target_temp'  => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
-                'hvac_mode'    => isset($trv['state']) ? $trv['state'] : 'unknown',
-                'battery'      => $battery_level
+                'entity_id'      => $trv['entity_id'],
+                'location'       => $location,
+                'current_temp'   => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
+                'target_temp'    => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
+                'hvac_mode'      => isset($trv['state']) ? $trv['state'] : 'unknown',
+                'battery'        => $battery_level,
+                'valve_position' => $valve_position
             );
         }
 
