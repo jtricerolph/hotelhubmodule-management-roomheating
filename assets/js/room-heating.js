@@ -633,40 +633,54 @@
             if (data.room_state) {
                 const $statusInfo = $('<div>', { class: 'hhrh-room-status-info' });
 
-                let statusText = '';
+                let statusLabel = '';
+                let timingInfo = '';
                 let statusClass = '';
 
                 // Determine status and timing info
                 if (data.room_state === 'vacant') {
                     statusClass = 'hhrh-status-vacant';
+                    statusLabel = 'Vacant';
                     if (data.heating_start) {
                         const heatingDate = new Date(data.heating_start);
-                        statusText = 'Vacant - till ' + heatingDate.toLocaleString();
-                    } else {
-                        statusText = 'Vacant';
+                        timingInfo = 'till ' + heatingDate.toLocaleString();
                     }
                 } else if (data.room_state === 'heating_up') {
                     statusClass = 'hhrh-status-heating-up';
+                    statusLabel = 'Heating Up';
                     if (data.arrival) {
                         const arrivalDate = new Date(data.arrival);
-                        statusText = 'Heating Up - arriving ' + arrivalDate.toLocaleString();
-                    } else {
-                        statusText = 'Heating Up';
+                        timingInfo = 'arriving ' + arrivalDate.toLocaleString();
                     }
                 } else if (data.room_state === 'occupied') {
                     statusClass = 'hhrh-status-occupied';
+                    statusLabel = 'Occupied';
                     if (data.departure) {
                         const departDate = new Date(data.departure);
-                        statusText = 'Occupied - till ' + departDate.toLocaleString();
-                    } else {
-                        statusText = 'Occupied';
+                        timingInfo = 'till ' + departDate.toLocaleString();
                     }
                 } else {
-                    statusText = data.room_state.replace(/_/g, ' ');
+                    statusLabel = data.room_state.replace(/_/g, ' ');
                 }
 
                 $statusInfo.addClass(statusClass);
-                $statusInfo.text(statusText);
+
+                // Add status label
+                const $statusLabel = $('<div>', {
+                    class: 'hhrh-status-label',
+                    text: statusLabel
+                });
+                $statusInfo.append($statusLabel);
+
+                // Add timing info if available
+                if (timingInfo) {
+                    const $timingInfo = $('<div>', {
+                        class: 'hhrh-status-timing',
+                        text: timingInfo
+                    });
+                    $statusInfo.append($timingInfo);
+                }
+
                 $modalHeader.append($statusInfo);
             }
 
