@@ -14,6 +14,18 @@
         isLoading: false,
 
         /**
+         * Get battery SVG icon
+         */
+        getBatterySVG: function(status) {
+            const svgs = {
+                'critical': '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M160-240q-50 0-85-35t-35-85v-240q0-50 35-85t85-35h540q50 0 85 35t35 85v240q0 50-35 85t-85 35H160Zm0-80h540q17 0 28.5-11.5T740-360v-240q0-17-11.5-28.5T700-640H160q-17 0-28.5 11.5T120-600v240q0 17 11.5 28.5T160-320Zm700-60v-200h20q17 0 28.5 11.5T920-540v120q0 17-11.5 28.5T880-380h-20Zm-700 20v-240h80v240h-80Z"/></svg>',
+                'warning': '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M160-240q-50 0-85-35t-35-85v-240q0-50 35-85t85-35h540q50 0 85 35t35 85v240q0 50-35 85t-85 35H160Zm0-80h540q17 0 28.5-11.5T740-360v-240q0-17-11.5-28.5T700-640H160q-17 0-28.5 11.5T120-600v240q0 17 11.5 28.5T160-320Zm700-60v-200h20q17 0 28.5 11.5T920-540v120q0 17-11.5 28.5T880-380h-20Zm-700 20v-240h240v240H160Z"/></svg>',
+                'ok': '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M160-240q-50 0-85-35t-35-85v-240q0-50 35-85t85-35h540q50 0 85 35t35 85v240q0 50-35 85t-85 35H160Zm0-80h540q17 0 28.5-11.5T740-360v-240q0-17-11.5-28.5T700-640H160q-17 0-28.5 11.5T120-600v240q0 17 11.5 28.5T160-320Zm700-60v-200h20q17 0 28.5 11.5T920-540v120q0 17-11.5 28.5T880-380h-20Zm-700 20v-240h480v240H160Z"/></svg>'
+            };
+            return svgs[status] || svgs['ok'];
+        },
+
+        /**
          * Initialize the module
          */
         init: function() {
@@ -411,14 +423,9 @@
                     class: 'hhrh-battery-badge hhrh-battery-' + room.battery_status
                 });
 
-                // Icon mapping: OK = battery_6_bar, Warning = battery_2_bar, Critical = battery_1_bar
-                const batteryIcon = room.battery_status === 'critical' ? 'battery_1_bar' :
-                                   (room.battery_status === 'warning' ? 'battery_2_bar' : 'battery_6_bar');
-
-                $batteryBadge.append($('<span>', {
-                    class: 'material-symbols-outlined',
-                    text: batteryIcon
-                }));
+                // Add SVG icon
+                const batterySvg = HHRH.getBatterySVG(room.battery_status);
+                $batteryBadge.append(batterySvg);
 
                 if (room.battery_status !== 'ok' && room.min_battery !== null) {
                     $batteryBadge.append($('<span>', {
@@ -532,25 +539,26 @@
                     // Battery indicator in top right
                     if (trv.battery !== null && trv.battery !== undefined) {
                         const batteryLevel = parseInt(trv.battery);
-                        let batteryIcon = 'battery_6_bar';
+                        let batteryStatus = 'ok';
                         let batteryClass = 'hhrh-trv-battery';
 
-                        // Determine battery icon based on level
+                        // Determine battery status based on level
                         if (batteryLevel <= 15) {
-                            batteryIcon = 'battery_1_bar';
+                            batteryStatus = 'critical';
                             batteryClass += ' hhrh-battery-critical';
                         } else if (batteryLevel <= 30) {
-                            batteryIcon = 'battery_2_bar';
+                            batteryStatus = 'warning';
                             batteryClass += ' hhrh-battery-warning';
                         } else {
                             batteryClass += ' hhrh-battery-ok';
                         }
 
                         const $battery = $('<div>', { class: batteryClass });
-                        $battery.append($('<span>', {
-                            class: 'material-symbols-outlined',
-                            text: batteryIcon
-                        }));
+
+                        // Add SVG icon
+                        const batterySvg = HHRH.getBatterySVG(batteryStatus);
+                        $battery.append(batterySvg);
+
                         $battery.append($('<span>', {
                             text: trv.battery + '%'
                         }));

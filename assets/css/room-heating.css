@@ -507,6 +507,7 @@
 .hhrh-temp-control {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     margin-top: 12px;
 }
@@ -602,20 +603,21 @@
     margin-left: auto;
 }
 
-.hhrh-trv-battery .material-symbols-outlined {
-    font-size: 20px;
+.hhrh-trv-battery svg {
+    width: 20px;
+    height: 20px;
 }
 
-.hhrh-trv-battery.hhrh-battery-ok .material-symbols-outlined {
-    color: #16a34a;
+.hhrh-trv-battery.hhrh-battery-ok svg path {
+    fill: #16a34a;
 }
 
-.hhrh-trv-battery.hhrh-battery-warning .material-symbols-outlined {
-    color: #f59e0b;
+.hhrh-trv-battery.hhrh-battery-warning svg path {
+    fill: #f59e0b;
 }
 
-.hhrh-trv-battery.hhrh-battery-critical .material-symbols-outlined {
-    color: #dc2626;
+.hhrh-trv-battery.hhrh-battery-critical svg path {
+    fill: #dc2626;
 }
 
 .hhrh-battery-badge {
@@ -628,8 +630,9 @@
     font-weight: 500;
 }
 
-.hhrh-battery-badge .material-symbols-outlined {
-    font-size: 16px;
+.hhrh-battery-badge svg {
+    width: 16px;
+    height: 16px;
 }
 
 .hhrh-battery-ok {
@@ -637,14 +640,26 @@
     color: #065f46;
 }
 
+.hhrh-battery-ok svg path {
+    fill: #065f46;
+}
+
 .hhrh-battery-warning {
     background: #fef3c7;
     color: #92400e;
 }
 
+.hhrh-battery-warning svg path {
+    fill: #92400e;
+}
+
 .hhrh-battery-critical {
     background: #fee2e2;
     color: #991b1b;
+}
+
+.hhrh-battery-critical svg path {
+    fill: #991b1b;
 }
 
 .hhrh-battery-alert {
