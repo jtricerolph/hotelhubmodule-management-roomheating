@@ -90,7 +90,12 @@
          * Load rooms data
          */
         loadRooms: function() {
-            if (HHRH.isLoading) return;
+            console.log('[HHRH] loadRooms called');
+
+            if (HHRH.isLoading) {
+                console.log('[HHRH] Already loading, skipping');
+                return;
+            }
 
             HHRH.isLoading = true;
 
@@ -98,6 +103,9 @@
             $('#hhrh-loading').show();
             $('#hhrh-error').hide();
             $('#hhrh-rooms').hide();
+
+            console.log('[HHRH] Making AJAX request to:', hhrhData.ajaxUrl);
+            console.log('[HHRH] Location ID:', hhrhData.locationId);
 
             $.ajax({
                 url: hhrhData.ajaxUrl,
@@ -108,7 +116,10 @@
                     location_id: hhrhData.locationId
                 },
                 success: function(response) {
+                    console.log('[HHRH] AJAX success, response:', response);
+
                     if (response.success) {
+                        console.log('[HHRH] Loaded', response.data.rooms.length, 'rooms');
                         HHRH.rooms = response.data.rooms;
                         HHRH.lastUpdate = response.data.timestamp;
                         HHRH.renderRooms();
@@ -116,16 +127,20 @@
                         // Update connection status
                         $('#hhrh-connection-indicator').removeClass('error');
                     } else {
+                        console.error('[HHRH] Response error:', response.data);
                         HHRH.showError(response.data.message || hhrhData.strings.error);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('[HHRH] AJAX error:', status, error);
+                    console.error('[HHRH] XHR:', xhr);
                     HHRH.showError(hhrhData.strings.connectionError);
 
                     // Update connection status
                     $('#hhrh-connection-indicator').addClass('error');
                 },
                 complete: function() {
+                    console.log('[HHRH] AJAX complete, setting isLoading = false');
                     HHRH.isLoading = false;
                     $('#hhrh-loading').hide();
                 }
@@ -646,9 +661,56 @@
         }
     };
 
-    // Initialize on DOM ready
+    // Initialization handling for HHA PWA timing
+    let initialized = false;
+
+    function checkAndInit() {
+        if (initialized) return true;
+
+        if ($('#hhrh-container').length) {
+            console.log('[HHRH] Room Heating module content found, initializing...');
+            HHRH.init();
+            initialized = true;
+            return true;
+        }
+        return false;
+    }
+
+    // Try on document ready
     $(document).ready(function() {
-        HHRH.init();
+        console.log('[HHRH] Document ready, checking for module...');
+        checkAndInit();
     });
+
+    // Listen for HHA custom module load event
+    $(document).on('hha-module-loaded', function(e, moduleId) {
+        if (moduleId === 'room_heating') {
+            console.log('[HHRH] Received HHA module-loaded event, resetting initialization');
+            initialized = false; // Reset flag to allow re-initialization
+            setTimeout(checkAndInit, 100); // Small delay to ensure DOM is ready
+        }
+    });
+
+    // Also watch for dynamic content changes (for HHA SPA loading)
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+                if (checkAndInit()) {
+                    observer.disconnect(); // Stop observing once initialized
+                }
+            }
+        });
+    });
+
+    // Start observing after a short delay to let HHA set up
+    setTimeout(function() {
+        if (!initialized && document.body) {
+            console.log('[HHRH] Starting MutationObserver...');
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+    }, 100);
 
 })(jQuery);
