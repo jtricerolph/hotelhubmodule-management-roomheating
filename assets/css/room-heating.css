@@ -337,12 +337,18 @@
     color: #1f2937;
 }
 
+.hhrh-room-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px solid #f3f4f6;
+}
+
 .hhrh-room-state {
     font-size: 11px;
     color: #6b7280;
     text-transform: capitalize;
-    padding-top: 6px;
-    border-top: 1px solid #f3f4f6;
 }
 
 /* Category Groups */
@@ -568,20 +574,30 @@
     font-size: 20px;
 }
 
+.hhrh-trv-battery.hhrh-battery-ok .material-symbols-outlined {
+    color: #16a34a;
+}
+
+.hhrh-trv-battery.hhrh-battery-warning .material-symbols-outlined {
+    color: #f59e0b;
+}
+
+.hhrh-trv-battery.hhrh-battery-critical .material-symbols-outlined {
+    color: #dc2626;
+}
+
 .hhrh-battery-badge {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 4px 8px;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    margin-top: auto;
-    align-self: flex-end;
 }
 
 .hhrh-battery-badge .material-symbols-outlined {
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .hhrh-battery-ok {

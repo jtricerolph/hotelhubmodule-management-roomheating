@@ -376,53 +376,44 @@
                 $body.append($trvs);
             }
 
+            // Footer row for room state and battery
+            const $footer = $('<div>', { class: 'hhrh-room-footer' });
+
             // Room state
             if (room.room_state) {
-                $body.append($('<div>', {
+                $footer.append($('<div>', {
                     class: 'hhrh-room-state',
                     text: room.room_state.replace(/_/g, ' ')
                 }));
             }
 
             // Battery indicator badge
-            if (room.battery_status && room.battery_status !== 'ok') {
+            if (room.battery_status) {
                 const $batteryBadge = $('<div>', {
                     class: 'hhrh-battery-badge hhrh-battery-' + room.battery_status
                 });
 
-                const batteryIcon = room.battery_status === 'critical' ? 'battery_alert' : 'battery_low';
-                const batterySymbol = room.battery_status === 'critical' ? 'error' : 'warning';
+                // Icon mapping: OK = battery_6_bar, Warning = battery_2_bar, Critical = battery_1_bar
+                const batteryIcon = room.battery_status === 'critical' ? 'battery_1_bar' :
+                                   (room.battery_status === 'warning' ? 'battery_2_bar' : 'battery_6_bar');
 
                 $batteryBadge.append($('<span>', {
                     class: 'material-symbols-outlined',
                     text: batteryIcon
                 }));
 
-                if (room.min_battery !== null) {
+                if (room.battery_status !== 'ok' && room.min_battery !== null) {
                     $batteryBadge.append($('<span>', {
                         class: 'hhrh-battery-percent',
                         text: room.min_battery + '%'
                     }));
                 }
 
-                $batteryBadge.append($('<span>', {
-                    class: 'material-symbols-outlined hhrh-battery-alert',
-                    text: batterySymbol
-                }));
+                $footer.append($batteryBadge);
+            }
 
-                $body.append($batteryBadge);
-            } else if (room.battery_status === 'ok') {
-                // Show green tick for OK battery status
-                const $batteryBadge = $('<div>', {
-                    class: 'hhrh-battery-badge hhrh-battery-ok'
-                });
-
-                $batteryBadge.append($('<span>', {
-                    class: 'material-symbols-outlined',
-                    text: 'check_circle'
-                }));
-
-                $body.append($batteryBadge);
+            if ($footer.children().length > 0) {
+                $body.append($footer);
             }
 
             $card.append($body);
@@ -517,10 +508,25 @@
 
                     // Battery indicator in top right
                     if (trv.battery !== null && trv.battery !== undefined) {
-                        const $battery = $('<div>', { class: 'hhrh-trv-battery' });
+                        const batteryLevel = parseInt(trv.battery);
+                        let batteryIcon = 'battery_6_bar';
+                        let batteryClass = 'hhrh-trv-battery';
+
+                        // Determine battery icon based on level
+                        if (batteryLevel <= 15) {
+                            batteryIcon = 'battery_1_bar';
+                            batteryClass += ' hhrh-battery-critical';
+                        } else if (batteryLevel <= 30) {
+                            batteryIcon = 'battery_2_bar';
+                            batteryClass += ' hhrh-battery-warning';
+                        } else {
+                            batteryClass += ' hhrh-battery-ok';
+                        }
+
+                        const $battery = $('<div>', { class: batteryClass });
                         $battery.append($('<span>', {
                             class: 'material-symbols-outlined',
-                            text: 'battery_full'
+                            text: batteryIcon
                         }));
                         $battery.append($('<span>', {
                             text: trv.battery + '%'
