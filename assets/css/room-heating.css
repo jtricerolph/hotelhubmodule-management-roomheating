@@ -323,13 +323,27 @@
 
 .hhrh-trv-item {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
     font-size: 13px;
     color: #4b5563;
 }
 
+.hhrh-trv-item i.mdi {
+    font-size: 18px;
+}
+
+.hhrh-radiator-active {
+    color: #dc2626;
+}
+
+.hhrh-radiator-idle {
+    color: #3b82f6;
+}
+
 .hhrh-trv-location {
     font-weight: 500;
+    flex: 1;
 }
 
 .hhrh-trv-target {

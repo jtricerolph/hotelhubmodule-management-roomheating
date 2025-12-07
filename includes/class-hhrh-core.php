@@ -171,6 +171,14 @@ class HHRH_Core {
             null
         );
 
+        // Material Design Icons for radiator icons
+        wp_enqueue_style(
+            'material-design-icons',
+            'https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css',
+            array(),
+            '7.4.47'
+        );
+
         // CSS
         wp_enqueue_style(
             'hhrh-room-heating',

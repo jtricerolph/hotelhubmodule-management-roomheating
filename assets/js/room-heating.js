@@ -390,6 +390,28 @@
                 room.trvs.forEach(trv => {
                     const $trvItem = $('<div>', { class: 'hhrh-trv-item' });
 
+                    // Radiator icon based on valve position
+                    if (trv.valve_position !== null && trv.valve_position !== undefined) {
+                        const valvePosition = parseInt(trv.valve_position, 10);
+                        if (!isNaN(valvePosition)) {
+                            let iconClass = 'mdi ';
+                            let iconColorClass = '';
+
+                            if (valvePosition > 0) {
+                                iconClass += 'mdi-radiator';
+                                iconColorClass = 'hhrh-radiator-active';
+                            } else {
+                                iconClass += 'mdi-radiator-disabled';
+                                iconColorClass = 'hhrh-radiator-idle';
+                            }
+
+                            $trvItem.append($('<i>', {
+                                class: iconClass + ' ' + iconColorClass,
+                                title: 'Valve: ' + valvePosition + '%'
+                            }));
+                        }
+                    }
+
                     $trvItem.append($('<span>', {
                         class: 'hhrh-trv-location',
                         text: trv.location + ':'
