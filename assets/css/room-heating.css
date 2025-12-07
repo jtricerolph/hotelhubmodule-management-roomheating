@@ -547,6 +547,19 @@
     font-size: 16px;
     font-weight: 600;
     transition: all 0.2s;
+    line-height: normal;
+    vertical-align: middle;
+}
+
+/* Remove default number input spinner buttons for cleaner look */
+.hhrh-temp-input::-webkit-outer-spin-button,
+.hhrh-temp-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.hhrh-temp-input[type=number] {
+    -moz-appearance: textfield;
 }
 
 .hhrh-temp-input.hhrh-temp-modified {
