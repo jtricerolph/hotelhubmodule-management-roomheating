@@ -134,7 +134,6 @@ class HHRH_Display {
             <!-- Controls Panel -->
             <div class="hhrh-controls" id="hhrh-controls" style="display:none;">
                 <div class="hhrh-controls-section">
-                    <label><?php _e('View:', 'hhrh'); ?></label>
                     <button class="hhrh-view-toggle active" data-view="flat" type="button">
                         <span class="material-symbols-outlined">view_list</span>
                         <?php _e('Flat', 'hhrh'); ?>
@@ -146,7 +145,6 @@ class HHRH_Display {
                 </div>
 
                 <div class="hhrh-controls-section">
-                    <label><?php _e('Filter:', 'hhrh'); ?></label>
                     <button class="hhrh-filter-btn active" data-filter="all" type="button">
                         <?php _e('All', 'hhrh'); ?>
                     </button>
