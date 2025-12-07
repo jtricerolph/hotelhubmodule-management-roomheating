@@ -652,7 +652,7 @@
 
                             $wifi.append($('<span>', {
                                 class: 'hhrh-wifi-value',
-                                text: wifiSignal + ' dBm'
+                                text: wifiSignal
                             }));
 
                             $indicators.append($wifi);
