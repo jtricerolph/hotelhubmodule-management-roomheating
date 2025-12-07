@@ -47,7 +47,7 @@ class HHRH_Admin {
         }
 
         // Get all hotels
-        if (!function_exists('hha') || !isset(hha()->hotels)) {
+        if (!function_exists('hha')) {
             echo '<div class="wrap">';
             echo '<h1>' . __('Room Heating Settings', 'hhrh') . '</h1>';
             echo '<div class="notice notice-error"><p>' . __('Hotel Hub App is not active.', 'hhrh') . '</p></div>';
@@ -55,7 +55,16 @@ class HHRH_Admin {
             return;
         }
 
-        $hotels = hha()->hotels->get_all();
+        $hha_hotels = hha()->hotels;
+        if (!$hha_hotels) {
+            echo '<div class="wrap">';
+            echo '<h1>' . __('Room Heating Settings', 'hhrh') . '</h1>';
+            echo '<div class="notice notice-error"><p>' . __('Hotel Hub App is not properly initialized.', 'hhrh') . '</p></div>';
+            echo '</div>';
+            return;
+        }
+
+        $hotels = $hha_hotels->get_all();
 
         if (empty($hotels)) {
             echo '<div class="wrap">';
