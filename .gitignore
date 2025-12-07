@@ -1,0 +1,28 @@
+# WordPress
+*.log
+.htaccess
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp files
+*~
+*.tmp
+*.bak
+*.swp
+
+# Node
+node_modules/
+npm-debug.log
+
+# Composer
+/vendor/
+composer.lock
