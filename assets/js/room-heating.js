@@ -377,6 +377,47 @@
                 }));
             }
 
+            // Battery indicator badge
+            if (room.battery_status && room.battery_status !== 'ok') {
+                const $batteryBadge = $('<div>', {
+                    class: 'hhrh-battery-badge hhrh-battery-' + room.battery_status
+                });
+
+                const batteryIcon = room.battery_status === 'critical' ? 'battery_alert' : 'battery_low';
+                const batterySymbol = room.battery_status === 'critical' ? 'error' : 'warning';
+
+                $batteryBadge.append($('<span>', {
+                    class: 'material-symbols-outlined',
+                    text: batteryIcon
+                }));
+
+                if (room.min_battery !== null) {
+                    $batteryBadge.append($('<span>', {
+                        class: 'hhrh-battery-percent',
+                        text: room.min_battery + '%'
+                    }));
+                }
+
+                $batteryBadge.append($('<span>', {
+                    class: 'material-symbols-outlined hhrh-battery-alert',
+                    text: batterySymbol
+                }));
+
+                $body.append($batteryBadge);
+            } else if (room.battery_status === 'ok') {
+                // Show green tick for OK battery status
+                const $batteryBadge = $('<div>', {
+                    class: 'hhrh-battery-badge hhrh-battery-ok'
+                });
+
+                $batteryBadge.append($('<span>', {
+                    class: 'material-symbols-outlined',
+                    text: 'check_circle'
+                }));
+
+                $body.append($batteryBadge);
+            }
+
             $card.append($body);
 
             return $card;
@@ -467,19 +508,17 @@
 
                     $header.append($title);
 
-                    // Health indicators
-                    if (trv.battery || trv.wifi_signal) {
-                        const $health = $('<div>', { class: 'hhrh-trv-health' });
-
-                        if (trv.battery) {
-                            $health.append('Battery: ' + trv.battery + '%');
-                        }
-
-                        if (trv.wifi_signal) {
-                            $health.append('WiFi: ' + trv.wifi_signal + 'dBm');
-                        }
-
-                        $header.append($health);
+                    // Battery indicator in top right
+                    if (trv.battery !== null && trv.battery !== undefined) {
+                        const $battery = $('<div>', { class: 'hhrh-trv-battery' });
+                        $battery.append($('<span>', {
+                            class: 'material-symbols-outlined',
+                            text: 'battery_full'
+                        }));
+                        $battery.append($('<span>', {
+                            text: trv.battery + '%'
+                        }));
+                        $header.append($battery);
                     }
 
                     $control.append($header);

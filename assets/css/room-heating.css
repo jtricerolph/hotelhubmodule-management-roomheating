@@ -553,3 +553,56 @@
         max-height: 95vh;
     }
 }
+
+/* Battery Indicators */
+.hhrh-trv-battery {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: #6b7280;
+    margin-left: auto;
+}
+
+.hhrh-trv-battery .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.hhrh-battery-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: auto;
+    align-self: flex-end;
+}
+
+.hhrh-battery-badge .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.hhrh-battery-ok {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.hhrh-battery-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.hhrh-battery-critical {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.hhrh-battery-alert {
+    font-size: 16px !important;
+}
+
+.hhrh-battery-percent {
+    font-weight: 600;
+}
