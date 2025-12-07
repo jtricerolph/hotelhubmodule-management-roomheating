@@ -527,7 +527,12 @@
                 const $trvControls = $('<div>', { class: 'hhrh-trv-controls' });
 
                 data.trvs.forEach(trv => {
-                    const $control = $('<div>', { class: 'hhrh-trv-control' });
+                    // Add heating class if valve is open
+                    let controlClass = 'hhrh-trv-control';
+                    if (trv.valve_position && trv.valve_position > 0) {
+                        controlClass += ' hhrh-trv-heating';
+                    }
+                    const $control = $('<div>', { class: controlClass });
 
                     // Header
                     const $header = $('<div>', { class: 'hhrh-trv-control-header' });
@@ -541,7 +546,65 @@
 
                     $header.append($title);
 
-                    // Battery indicator in top right
+                    // Indicators container (WiFi, Valve, Battery)
+                    const $indicators = $('<div>', { class: 'hhrh-trv-indicators' });
+
+                    // WiFi signal indicator
+                    if (trv.wifi_signal !== null && trv.wifi_signal !== undefined && trv.wifi_signal !== '') {
+                        const wifiSignal = parseInt(trv.wifi_signal, 10);
+
+                        if (!isNaN(wifiSignal)) {
+                            let wifiStatus = 'good';
+                            if (wifiSignal < -80) {
+                                wifiStatus = 'poor';
+                            } else if (wifiSignal < -70) {
+                                wifiStatus = 'fair';
+                            }
+
+                            const $wifi = $('<div>', {
+                                class: 'hhrh-trv-wifi hhrh-wifi-' + wifiStatus,
+                                title: 'WiFi Signal: ' + wifiSignal + ' dBm'
+                            });
+
+                            $wifi.append($('<span>', {
+                                class: 'material-symbols-outlined',
+                                text: 'wifi'
+                            }));
+
+                            $wifi.append($('<span>', {
+                                class: 'hhrh-wifi-value',
+                                text: wifiSignal + ' dBm'
+                            }));
+
+                            $indicators.append($wifi);
+                        }
+                    }
+
+                    // Valve position indicator
+                    if (trv.valve_position !== null && trv.valve_position !== undefined) {
+                        const valvePosition = parseInt(trv.valve_position, 10);
+
+                        if (!isNaN(valvePosition)) {
+                            const $valve = $('<div>', {
+                                class: 'hhrh-trv-valve',
+                                title: 'Valve Position: ' + valvePosition + '%'
+                            });
+
+                            $valve.append($('<span>', {
+                                class: 'material-symbols-outlined',
+                                text: 'propane_tank'
+                            }));
+
+                            $valve.append($('<span>', {
+                                class: 'hhrh-valve-value',
+                                text: valvePosition + '%'
+                            }));
+
+                            $indicators.append($valve);
+                        }
+                    }
+
+                    // Battery indicator
                     if (trv.battery !== null && trv.battery !== undefined && trv.battery !== '') {
                         const batteryLevel = parseInt(trv.battery, 10);
 
@@ -570,8 +633,13 @@
                             $battery.append($('<span>', {
                                 text: batteryLevel + '%'
                             }));
-                            $header.append($battery);
+                            $indicators.append($battery);
                         }
+                    }
+
+                    // Append indicators to header
+                    if ($indicators.children().length > 0) {
+                        $header.append($indicators);
                     }
 
                     $control.append($header);

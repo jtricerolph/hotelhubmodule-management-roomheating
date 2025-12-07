@@ -295,14 +295,15 @@ class HHRH_Ajax {
             $wifi = $ha_api->find_state($all_states, "sensor.{$trv_base}_wifi_signal");
 
             $trv_details[] = array(
-                'entity_id'    => $trv['entity_id'],
-                'location'     => $location,
-                'current_temp' => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
-                'target_temp'  => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
-                'hvac_mode'    => isset($trv['state']) ? $trv['state'] : 'unknown',
-                'battery'      => $battery ? $battery['state'] : null,
-                'wifi_signal'  => $wifi ? $wifi['state'] : null,
-                'last_updated' => isset($trv['last_updated']) ? $trv['last_updated'] : null
+                'entity_id'      => $trv['entity_id'],
+                'location'       => $location,
+                'current_temp'   => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
+                'target_temp'    => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
+                'hvac_mode'      => isset($trv['state']) ? $trv['state'] : 'unknown',
+                'battery'        => $battery ? $battery['state'] : null,
+                'wifi_signal'    => $wifi ? $wifi['state'] : null,
+                'valve_position' => isset($trv['attributes']['pi_heating_demand']) ? (int)$trv['attributes']['pi_heating_demand'] : null,
+                'last_updated'   => isset($trv['last_updated']) ? $trv['last_updated'] : null
             );
         }
 
