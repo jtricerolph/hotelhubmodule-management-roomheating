@@ -120,12 +120,12 @@ class HHRH_Display {
                         <span class="material-symbols-outlined">thermostat</span>
                         <?php _e('Room Heating', 'hhrh'); ?>
                     </h2>
-                </div>
-                <div class="hhrh-header-right">
                     <span class="hhrh-last-update" id="hhrh-last-update">
                         <span class="material-symbols-outlined">schedule</span>
                         <span id="hhrh-last-update-text"><?php _e('Loading...', 'hhrh'); ?></span>
                     </span>
+                </div>
+                <div class="hhrh-header-right">
                     <button class="hhrh-header-btn" id="hhrh-settings-toggle" type="button">
                         <span class="material-symbols-outlined">tune</span>
                     </button>

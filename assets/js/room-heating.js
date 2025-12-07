@@ -617,10 +617,28 @@
                     const $header = $('<div>', { class: 'hhrh-trv-control-header' });
 
                     const $title = $('<div>', { class: 'hhrh-trv-location-title' });
-                    $title.append($('<span>', {
-                        class: 'material-symbols-outlined',
-                        text: 'thermostat'
-                    }));
+
+                    // Add radiator icon based on valve position
+                    if (trv.valve_position !== null && trv.valve_position !== undefined) {
+                        const valvePosition = parseInt(trv.valve_position, 10);
+                        if (!isNaN(valvePosition)) {
+                            let iconClass = 'mdi ';
+                            let iconColorClass = '';
+
+                            if (valvePosition > 0) {
+                                iconClass += 'mdi-radiator';
+                                iconColorClass = 'hhrh-radiator-active';
+                            } else {
+                                iconClass += 'mdi-radiator-disabled';
+                                iconColorClass = 'hhrh-radiator-idle';
+                            }
+
+                            $title.append($('<i>', {
+                                class: iconClass + ' ' + iconColorClass
+                            }));
+                        }
+                    }
+
                     $title.append(trv.location);
 
                     $header.append($title);

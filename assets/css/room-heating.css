@@ -22,22 +22,23 @@
 
 .hhrh-header-left {
     display: flex;
-    align-items: center;
-    gap: 15px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
 }
 
 .hhrh-title {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     margin: 0;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 600;
     color: #1f2937;
 }
 
 .hhrh-title .material-symbols-outlined {
-    font-size: 32px;
+    font-size: 24px;
     color: #f97316;
 }
 
@@ -104,12 +105,11 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 6px 12px;
+    padding: 4px 10px;
     border-radius: 6px;
     background: #f3f4f6;
     color: #6b7280;
-    font-size: 12px;
-    margin-right: 8px;
+    font-size: 11px;
 }
 
 .hhrh-last-update .material-symbols-outlined {
@@ -526,6 +526,10 @@
     color: #f97316;
 }
 
+.hhrh-trv-location-title i.mdi {
+    font-size: 20px;
+}
+
 /* Indicators container */
 .hhrh-trv-indicators {
     display: flex;
@@ -742,7 +746,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 14px;
+    font-size: 9px;
     color: #6b7280;
     margin-left: auto;
 }
