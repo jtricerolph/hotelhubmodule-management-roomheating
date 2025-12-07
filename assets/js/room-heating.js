@@ -481,11 +481,43 @@
             // Footer row for room state and battery
             const $footer = $('<div>', { class: 'hhrh-room-footer' });
 
-            // Room state
+            // Room state with timing information
             if (room.room_state) {
+                let statusText = '';
+                let statusClass = 'hhrh-room-state';
+
+                // Determine status and timing info
+                if (room.room_state === 'vacant') {
+                    statusClass += ' hhrh-room-state-vacant';
+                    if (room.heating_start) {
+                        const heatingDate = new Date(room.heating_start);
+                        statusText = 'Vacant - till ' + heatingDate.toLocaleString();
+                    } else {
+                        statusText = 'Vacant';
+                    }
+                } else if (room.room_state === 'heating_up') {
+                    statusClass += ' hhrh-room-state-heating-up';
+                    if (room.arrival) {
+                        const arrivalDate = new Date(room.arrival);
+                        statusText = 'Heating Up - arriving ' + arrivalDate.toLocaleString();
+                    } else {
+                        statusText = 'Heating Up';
+                    }
+                } else if (room.room_state === 'occupied') {
+                    statusClass += ' hhrh-room-state-occupied';
+                    if (room.departure) {
+                        const departDate = new Date(room.departure);
+                        statusText = 'Occupied - till ' + departDate.toLocaleString();
+                    } else {
+                        statusText = 'Occupied';
+                    }
+                } else {
+                    statusText = room.room_state.replace(/_/g, ' ');
+                }
+
                 $footer.append($('<div>', {
-                    class: 'hhrh-room-state',
-                    text: room.room_state.replace(/_/g, ' ')
+                    class: statusClass,
+                    text: statusText
                 }));
             }
 
@@ -587,9 +619,55 @@
          * Render room details in modal
          */
         renderRoomDetails: function(data) {
-            // Update modal title with room name from response
-            if (data.room_name) {
-                $('#hhrh-modal-title').text(data.room_name);
+            // Update modal title with room name and status
+            const $modalHeader = $('#hhrh-modal-title').parent();
+            $modalHeader.empty();
+
+            // Room name
+            const $roomName = $('<h2>', {
+                text: data.room_name || ''
+            });
+            $modalHeader.append($roomName);
+
+            // Room status with timing
+            if (data.room_state) {
+                const $statusInfo = $('<div>', { class: 'hhrh-room-status-info' });
+
+                let statusText = '';
+                let statusClass = '';
+
+                // Determine status and timing info
+                if (data.room_state === 'vacant') {
+                    statusClass = 'hhrh-status-vacant';
+                    if (data.heating_start) {
+                        const heatingDate = new Date(data.heating_start);
+                        statusText = 'Vacant - till ' + heatingDate.toLocaleString();
+                    } else {
+                        statusText = 'Vacant';
+                    }
+                } else if (data.room_state === 'heating_up') {
+                    statusClass = 'hhrh-status-heating-up';
+                    if (data.arrival) {
+                        const arrivalDate = new Date(data.arrival);
+                        statusText = 'Heating Up - arriving ' + arrivalDate.toLocaleString();
+                    } else {
+                        statusText = 'Heating Up';
+                    }
+                } else if (data.room_state === 'occupied') {
+                    statusClass = 'hhrh-status-occupied';
+                    if (data.departure) {
+                        const departDate = new Date(data.departure);
+                        statusText = 'Occupied - till ' + departDate.toLocaleString();
+                    } else {
+                        statusText = 'Occupied';
+                    }
+                } else {
+                    statusText = data.room_state.replace(/_/g, ' ');
+                }
+
+                $statusInfo.addClass(statusClass);
+                $statusInfo.text(statusText);
+                $modalHeader.append($statusInfo);
             }
 
             const $body = $('<div>');

@@ -131,6 +131,11 @@ class HHRH_Ajax {
         $should_heat_entity = $ha_api->find_state($all_states, "binary_sensor.{$normalized_name}_should_heat");
         $room_state_entity = $ha_api->find_state($all_states, "sensor.{$normalized_name}_room_state");
 
+        // Get timing information
+        $arrival = $ha_api->find_state($all_states, "sensor.{$normalized_name}_arrival");
+        $departure = $ha_api->find_state($all_states, "sensor.{$normalized_name}_departure");
+        $heating_start = $ha_api->find_state($all_states, "sensor.{$normalized_name}_heating_start_time");
+
         // Find TRVs using room number from site_name
         $trvs = $ha_api->find_trvs($all_states, $room_number);
 
@@ -204,6 +209,9 @@ class HHRH_Ajax {
             'site_order'      => isset($site['order']) ? (int)$site['order'] : 0,
             'heating_status'  => $heating_status,
             'room_state'      => $room_state_entity ? $room_state_entity['state'] : null,
+            'arrival'         => $arrival ? $arrival['state'] : null,
+            'departure'       => $departure ? $departure['state'] : null,
+            'heating_start'   => $heating_start ? $heating_start['state'] : null,
             'avg_temperature' => $avg_temp,
             'battery_status'  => $battery_status,
             'min_battery'     => $min_battery < 100 ? $min_battery : null,
@@ -314,12 +322,15 @@ class HHRH_Ajax {
 
         // Prepare response
         $response = array(
-            'room_id'      => $room_id,
-            'room_name'    => $site_name,
-            'room_state'   => $room_state ? $room_state['state'] : null,
-            'should_heat'  => $should_heat ? ($should_heat['state'] === 'on') : false,
-            'trvs'         => $trv_details,
-            'can_control'  => wfa_user_can('heating_control')
+            'room_id'       => $room_id,
+            'room_name'     => $site_name,
+            'room_state'    => $room_state ? $room_state['state'] : null,
+            'should_heat'   => $should_heat ? ($should_heat['state'] === 'on') : false,
+            'arrival'       => $arrival ? $arrival['state'] : null,
+            'departure'     => $departure ? $departure['state'] : null,
+            'heating_start' => $heating_start ? $heating_start['state'] : null,
+            'trvs'          => $trv_details,
+            'can_control'   => wfa_user_can('heating_control')
         );
 
         // Add booking info if enabled and permission
