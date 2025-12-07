@@ -783,12 +783,16 @@
 
                         const currentTemp = trv.target_temp || 20;
 
+                        // Check if valve calibration failed (-1% indicates calibration issue)
+                        const valveCalibrationFailed = trv.valve_position === -1;
+
                         // Decrease button
                         $tempControl.append($('<button>', {
                             class: 'hhrh-temp-btn hhrh-temp-decrease',
                             type: 'button',
                             'data-entity-id': trv.entity_id,
-                            text: '−'
+                            text: '−',
+                            disabled: valveCalibrationFailed
                         }));
 
                         // Temperature input
@@ -799,7 +803,8 @@
                             max: 30,
                             step: 0.5,
                             value: currentTemp,
-                            'data-original-value': currentTemp
+                            'data-original-value': currentTemp,
+                            disabled: valveCalibrationFailed
                         }));
 
                         // Increase button
@@ -807,17 +812,37 @@
                             class: 'hhrh-temp-btn hhrh-temp-increase',
                             type: 'button',
                             'data-entity-id': trv.entity_id,
-                            text: '+'
+                            text: '+',
+                            disabled: valveCalibrationFailed
                         }));
 
                         // Apply button
                         $tempControl.append($('<button>', {
                             class: 'hhrh-btn-apply',
                             'data-entity-id': trv.entity_id,
-                            text: 'Apply'
+                            text: 'Apply',
+                            disabled: valveCalibrationFailed
                         }));
 
                         $control.append($tempControl);
+
+                        // Show calibration error message if valve failed
+                        if (valveCalibrationFailed) {
+                            const $calibrationError = $('<div>', {
+                                class: 'hhrh-calibration-error'
+                            });
+
+                            $calibrationError.append($('<span>', {
+                                class: 'material-symbols-outlined',
+                                text: 'error'
+                            }));
+
+                            $calibrationError.append($('<span>', {
+                                text: 'Valve calibration failed, target adjustment not possible'
+                            }));
+
+                            $control.append($calibrationError);
+                        }
                     }
 
                     $trvControls.append($control);
