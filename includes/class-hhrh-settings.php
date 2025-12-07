@@ -79,7 +79,21 @@ class HHRH_Settings {
         $all_settings = self::get_all();
         $all_settings[$location_id] = array_merge(self::get_defaults(), $settings);
 
-        return update_option(self::OPTION_NAME, $all_settings);
+        // update_option returns false if value unchanged, but that's not a failure
+        // So we'll always return true unless there's an actual error
+        $result = update_option(self::OPTION_NAME, $all_settings);
+
+        // If update_option returned false, check if it's because the value didn't change
+        if ($result === false) {
+            // Get the current value and compare
+            $current = get_option(self::OPTION_NAME, array());
+            // If current matches what we tried to save, it's not an error
+            if ($current === $all_settings) {
+                return true;
+            }
+        }
+
+        return $result;
     }
 
     /**
