@@ -22,9 +22,30 @@
                 return;
             }
 
+            this.loadPreferences();
             this.bindEvents();
             this.loadRooms();
             this.initHeartbeat();
+        },
+
+        /**
+         * Load saved preferences from localStorage
+         */
+        loadPreferences: function() {
+            const savedView = localStorage.getItem('hhrh_view');
+            const savedFilter = localStorage.getItem('hhrh_filter');
+
+            if (savedView && (savedView === 'flat' || savedView === 'grouped')) {
+                HHRH.currentView = savedView;
+                $('.hhrh-view-toggle').removeClass('active');
+                $('.hhrh-view-toggle[data-view="' + savedView + '"]').addClass('active');
+            }
+
+            if (savedFilter) {
+                HHRH.currentFilter = savedFilter;
+                $('.hhrh-filter-btn').removeClass('active');
+                $('.hhrh-filter-btn[data-filter="' + savedFilter + '"]').addClass('active');
+            }
         },
 
         /**
@@ -370,6 +391,9 @@
             $('.hhrh-view-toggle').removeClass('active');
             $('.hhrh-view-toggle[data-view="' + view + '"]').addClass('active');
 
+            // Save preference
+            localStorage.setItem('hhrh_view', view);
+
             HHRH.renderRooms();
         },
 
@@ -381,6 +405,9 @@
 
             $('.hhrh-filter-btn').removeClass('active');
             $('.hhrh-filter-btn[data-filter="' + filter + '"]').addClass('active');
+
+            // Save preference
+            localStorage.setItem('hhrh_filter', filter);
 
             HHRH.renderRooms();
         },
