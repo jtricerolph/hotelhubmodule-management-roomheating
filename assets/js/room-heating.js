@@ -495,6 +495,14 @@
                     } else {
                         statusText = 'Vacant';
                     }
+                } else if (room.room_state === 'booked') {
+                    statusClass += ' hhrh-room-state-booked';
+                    if (room.arrival) {
+                        const arrivalDate = new Date(room.arrival);
+                        statusText = 'Booked - arriving ' + arrivalDate.toLocaleString();
+                    } else {
+                        statusText = 'Booked';
+                    }
                 } else if (room.room_state === 'heating_up') {
                     statusClass += ' hhrh-room-state-heating-up';
                     if (room.arrival) {
@@ -511,6 +519,9 @@
                     } else {
                         statusText = 'Occupied';
                     }
+                } else if (room.room_state === 'cooling_down') {
+                    statusClass += ' hhrh-room-state-cooling-down';
+                    statusText = 'Cooling Down';
                 } else {
                     statusText = room.room_state.replace(/_/g, ' ');
                 }
@@ -641,6 +652,13 @@
                         const heatingDate = new Date(data.heating_start);
                         timingInfo = 'till ' + heatingDate.toLocaleString();
                     }
+                } else if (data.room_state === 'booked') {
+                    statusClass = 'hhrh-status-booked';
+                    statusLabel = 'Booked';
+                    if (data.arrival) {
+                        const arrivalDate = new Date(data.arrival);
+                        timingInfo = 'arriving ' + arrivalDate.toLocaleString();
+                    }
                 } else if (data.room_state === 'heating_up') {
                     statusClass = 'hhrh-status-heating-up';
                     statusLabel = 'Heating Up';
@@ -655,6 +673,9 @@
                         const departDate = new Date(data.departure);
                         timingInfo = 'till ' + departDate.toLocaleString();
                     }
+                } else if (data.room_state === 'cooling_down') {
+                    statusClass = 'hhrh-status-cooling-down';
+                    statusLabel = 'Cooling Down';
                 } else {
                     statusLabel = data.room_state.replace(/_/g, ' ');
                 }
