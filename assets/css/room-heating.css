@@ -472,14 +472,14 @@
 
 .hhrh-modal-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 12px;
     padding: 20px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .hhrh-modal-header h2 {
-    margin: 0 0 8px 0;
+    margin: 0;
     font-size: 24px;
     color: #1f2937;
 }
@@ -489,7 +489,6 @@
     display: inline-block;
     padding: 6px 12px;
     border-radius: 6px;
-    margin-top: 8px;
 }
 
 .hhrh-status-label {
@@ -527,6 +526,7 @@
     border: none;
     cursor: pointer;
     padding: 4px;
+    margin-left: auto;
     border-radius: 6px;
     transition: background 0.2s;
 }

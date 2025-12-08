@@ -619,17 +619,13 @@
          * Render room details in modal
          */
         renderRoomDetails: function(data) {
-            // Update modal title with room name and status
-            const $modalHeader = $('#hhrh-modal-title').parent();
-            $modalHeader.empty();
+            // Update modal title with room name
+            $('#hhrh-modal-title').text(data.room_name || '');
 
-            // Room name
-            const $roomName = $('<h2>', {
-                text: data.room_name || ''
-            });
-            $modalHeader.append($roomName);
+            // Remove any existing status info
+            $('.hhrh-room-status-info').remove();
 
-            // Room status with timing
+            // Room status with timing (insert after title)
             if (data.room_state) {
                 const $statusInfo = $('<div>', { class: 'hhrh-room-status-info' });
 
@@ -681,7 +677,8 @@
                     $statusInfo.append($timingInfo);
                 }
 
-                $modalHeader.append($statusInfo);
+                // Insert after the title
+                $('#hhrh-modal-title').after($statusInfo);
             }
 
             const $body = $('<div>');
