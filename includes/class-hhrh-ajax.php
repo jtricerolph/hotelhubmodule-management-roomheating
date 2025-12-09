@@ -301,22 +301,32 @@ class HHRH_Ajax {
                 $location = 'Unknown';
             }
 
-            // Get associated sensors (battery, wifi, valve, etc.)
+            // Get associated sensors (battery, wifi, valve, command target temp, etc.)
             $trv_base = str_replace('climate.', '', $trv['entity_id']);
             $battery = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_battery");
             $wifi = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_wifi_signal");
             $valve = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_valve_position");
+            $command_target = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_target_temperature");
+
+            // Get the climate's actual target temp and the command target temp
+            $climate_target = isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null;
+            $command_target_temp = $command_target ? (float)$command_target['state'] : null;
+
+            // Determine if there's a pending target change (command != climate target)
+            $has_pending_target = ($command_target_temp !== null && $climate_target !== null && abs($command_target_temp - $climate_target) > 0.1);
 
             $trv_details[] = array(
-                'entity_id'      => $trv['entity_id'],
-                'location'       => $location,
-                'current_temp'   => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
-                'target_temp'    => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
-                'hvac_mode'      => isset($trv['state']) ? $trv['state'] : 'unknown',
-                'battery'        => $battery ? $battery['state'] : null,
-                'wifi_signal'    => $wifi ? $wifi['state'] : null,
-                'valve_position' => $valve ? (int)$valve['state'] : null,
-                'last_updated'   => isset($trv['last_updated']) ? $trv['last_updated'] : null
+                'entity_id'           => $trv['entity_id'],
+                'location'            => $location,
+                'current_temp'        => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
+                'target_temp'         => $climate_target,
+                'command_target_temp' => $command_target_temp,
+                'has_pending_target'  => $has_pending_target,
+                'hvac_mode'           => isset($trv['state']) ? $trv['state'] : 'unknown',
+                'battery'             => $battery ? $battery['state'] : null,
+                'wifi_signal'         => $wifi ? $wifi['state'] : null,
+                'valve_position'      => $valve ? (int)$valve['state'] : null,
+                'last_updated'        => isset($trv['last_updated']) ? $trv['last_updated'] : null
             );
         }
 
@@ -402,6 +412,7 @@ class HHRH_Ajax {
         }
 
         $entity_id = isset($_POST['entity_id']) ? sanitize_text_field($_POST['entity_id']) : '';
+        $expected_temp = isset($_POST['expected_temp']) ? (float)$_POST['expected_temp'] : null;
         $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : hha_get_current_location();
 
         if (empty($entity_id)) {
@@ -420,7 +431,7 @@ class HHRH_Ajax {
             ));
         }
 
-        // Find the specific entity
+        // Find the climate entity
         $entity = $ha_api->find_state($all_states, $entity_id);
 
         if (!$entity) {
@@ -429,18 +440,27 @@ class HHRH_Ajax {
             ));
         }
 
-        // Get target temperature from attributes
-        $target_temp = isset($entity['attributes']['temperature']) ? (float)$entity['attributes']['temperature'] : null;
+        // Get climate's actual target temperature
+        $climate_target = isset($entity['attributes']['temperature']) ? (float)$entity['attributes']['temperature'] : null;
 
-        if ($target_temp === null) {
-            wp_send_json_error(array(
-                'message' => __('Temperature attribute not found.', 'hhrh')
-            ));
-        }
+        // Get command target temperature sensor
+        $trv_base = str_replace('climate.', '', $entity_id);
+        $command_sensor = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_target_temperature");
+        $command_target = $command_sensor ? (float)$command_sensor['state'] : null;
+
+        // Check if climate has updated to expected temperature
+        $climate_confirmed = ($climate_target !== null && $expected_temp !== null && abs($climate_target - $expected_temp) < 0.1);
+
+        // Check if command sensor has the expected temperature (valve sleeping scenario)
+        $command_confirmed = ($command_target !== null && $expected_temp !== null && abs($command_target - $expected_temp) < 0.1);
 
         wp_send_json_success(array(
-            'temperature' => $target_temp,
-            'entity_id'   => $entity_id
+            'entity_id'         => $entity_id,
+            'climate_target'    => $climate_target,
+            'command_target'    => $command_target,
+            'expected_temp'     => $expected_temp,
+            'climate_confirmed' => $climate_confirmed,
+            'command_confirmed' => $command_confirmed
         ));
     }
 

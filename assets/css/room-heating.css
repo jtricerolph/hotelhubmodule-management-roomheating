@@ -721,6 +721,20 @@
     color: #1f2937;
 }
 
+/* Pending target temperature display */
+.hhrh-target-actual {
+    color: #9ca3af;
+    text-decoration: line-through;
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.hhrh-target-pending {
+    color: #f59e0b;
+    font-size: 32px;
+    font-weight: 700;
+}
+
 .hhrh-temp-control {
     display: flex;
     align-items: center;
@@ -993,6 +1007,10 @@
 
 .hhrh-notification-icon.warning .material-symbols-outlined {
     color: #f59e0b;
+}
+
+.hhrh-notification-icon.info .material-symbols-outlined {
+    color: #3b82f6;
 }
 
 .hhrh-notification-content {

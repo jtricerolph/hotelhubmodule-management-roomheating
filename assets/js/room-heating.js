@@ -879,10 +879,19 @@
                         class: 'hhrh-temp-display-label',
                         text: 'Target'
                     }));
-                    $target.append($('<div>', {
-                        class: 'hhrh-temp-display-value',
-                        text: (trv.target_temp || '--') + '°'
-                    }));
+
+                    // Check if there's a pending target temperature
+                    const $targetValue = $('<div>', { class: 'hhrh-temp-display-value' });
+                    if (trv.has_pending_target && trv.command_target_temp !== null) {
+                        // Show greyed out actual temp with pending command temp
+                        $targetValue.html(
+                            '<span class="hhrh-target-actual">' + (trv.target_temp || '--') + '°</span>' +
+                            '<span class="hhrh-target-pending">' + trv.command_target_temp.toFixed(1) + '°</span>'
+                        );
+                    } else {
+                        $targetValue.text((trv.target_temp || '--') + '°');
+                    }
+                    $target.append($targetValue);
 
                     $temps.append($current).append($target);
                     $control.append($temps);
@@ -891,7 +900,10 @@
                     if (data.can_control) {
                         const $tempControl = $('<div>', { class: 'hhrh-temp-control' });
 
-                        const currentTemp = trv.target_temp || 20;
+                        // Use command target if pending, otherwise use actual target
+                        const currentTemp = trv.has_pending_target && trv.command_target_temp !== null
+                            ? trv.command_target_temp
+                            : (trv.target_temp || 20);
 
                         // Check if valve calibration failed (-1% indicates calibration issue)
                         const valveCalibrationFailed = trv.valve_position === -1;
@@ -1025,8 +1037,8 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        // Verify the temperature was set by checking HA state
-                        HHRH.verifyTemperatureChange(entityId, $button, $input);
+                        // Verify the temperature was set by polling HA state
+                        HHRH.verifyTemperatureChange(entityId, temperature, $button, $input, 0);
                     } else {
                         $button.prop('disabled', false).removeClass('hhrh-btn-loading');
                         HHRH.showNotification(
@@ -1048,12 +1060,15 @@
         },
 
         /**
-         * Verify temperature change was successful
+         * Verify temperature change was successful with polling
+         * Polls up to 5 times (5 seconds total) waiting for climate to confirm
+         * If climate doesn't confirm but command sensor does, shows pending message
          */
-        verifyTemperatureChange: function(entityId, $button, $input) {
-            // Wait a moment for HA to process the change
+        verifyTemperatureChange: function(entityId, expectedTemp, $button, $input, attempt) {
+            const maxAttempts = 5;
+            const pollInterval = 1000; // 1 second between polls
+
             setTimeout(function() {
-                // Get current state from HA
                 $.ajax({
                     url: hhrhData.ajaxUrl,
                     type: 'POST',
@@ -1061,50 +1076,110 @@
                         action: 'hhrh_verify_temperature',
                         nonce: hhrhData.nonce,
                         entity_id: entityId,
+                        expected_temp: expectedTemp,
                         location_id: hhrhData.locationId
                     },
                     success: function(response) {
-                        $button.prop('disabled', false).removeClass('hhrh-btn-loading');
+                        if (response.success) {
+                            const data = response.data;
 
-                        if (response.success && response.data.temperature) {
-                            const actualTemp = parseFloat(response.data.temperature);
+                            // Check if climate has confirmed the change
+                            if (data.climate_confirmed) {
+                                // Success - climate entity has the new temperature
+                                $button.prop('disabled', false).removeClass('hhrh-btn-loading');
 
-                            // Update the displayed target temperature in the modal
-                            const $control = $button.closest('.hhrh-trv-control');
-                            $control.find('.hhrh-temp-display-value').last().text(actualTemp.toFixed(1) + '°C');
+                                const $control = $button.closest('.hhrh-trv-control');
+                                HHRH.updateTrvTargetDisplay($control, data.climate_target, null, false);
 
-                            // Reset the input to new value and remove modified class
-                            $input.val(actualTemp.toFixed(1));
-                            $input.data('original-value', actualTemp);
-                            $input.removeClass('hhrh-temp-modified');
+                                $input.val(data.climate_target.toFixed(1));
+                                $input.data('original-value', data.climate_target);
+                                $input.removeClass('hhrh-temp-modified');
 
-                            // Show success notification
-                            HHRH.showNotification(
-                                'success',
-                                'Temperature Updated',
-                                'Target temperature set to ' + actualTemp.toFixed(1) + '°C'
-                            );
+                                HHRH.showNotification(
+                                    'success',
+                                    'Temperature Updated',
+                                    'Target temperature set to ' + data.climate_target.toFixed(1) + '°C'
+                                );
 
-                            // Refresh main room list
-                            HHRH.loadRooms();
+                                HHRH.loadRooms();
+                            } else if (attempt < maxAttempts - 1) {
+                                // Not confirmed yet, retry
+                                HHRH.verifyTemperatureChange(entityId, expectedTemp, $button, $input, attempt + 1);
+                            } else {
+                                // Max attempts reached - check if command sensor confirmed
+                                $button.prop('disabled', false).removeClass('hhrh-btn-loading');
+
+                                if (data.command_confirmed) {
+                                    // Command was received but valve is sleeping
+                                    const $control = $button.closest('.hhrh-trv-control');
+                                    HHRH.updateTrvTargetDisplay($control, data.climate_target, data.command_target, true);
+
+                                    $input.val(data.command_target.toFixed(1));
+                                    $input.data('original-value', data.command_target);
+                                    $input.removeClass('hhrh-temp-modified');
+
+                                    HHRH.showNotification(
+                                        'info',
+                                        'Temperature Pending',
+                                        'Target ' + data.command_target.toFixed(1) + '°C has been submitted but valve may be sleeping. The new temperature should apply when valve wakes.'
+                                    );
+
+                                    HHRH.loadRooms();
+                                } else {
+                                    // Neither confirmed - something went wrong
+                                    HHRH.showNotification(
+                                        'warning',
+                                        'Verification Failed',
+                                        'Temperature update sent, but verification failed. Please check the device.'
+                                    );
+                                }
+                            }
                         } else {
-                            HHRH.showNotification(
-                                'warning',
-                                'Verification Failed',
-                                'Temperature may have been updated, but verification failed. Please check the device.'
-                            );
+                            // Error response
+                            if (attempt < maxAttempts - 1) {
+                                HHRH.verifyTemperatureChange(entityId, expectedTemp, $button, $input, attempt + 1);
+                            } else {
+                                $button.prop('disabled', false).removeClass('hhrh-btn-loading');
+                                HHRH.showNotification(
+                                    'warning',
+                                    'Verification Failed',
+                                    'Temperature may have been updated, but verification failed. Please check the device.'
+                                );
+                            }
                         }
                     },
                     error: function() {
-                        $button.prop('disabled', false).removeClass('hhrh-btn-loading');
-                        HHRH.showNotification(
-                            'warning',
-                            'Verification Failed',
-                            'Temperature update sent, but verification failed. Please check the device.'
-                        );
+                        if (attempt < maxAttempts - 1) {
+                            HHRH.verifyTemperatureChange(entityId, expectedTemp, $button, $input, attempt + 1);
+                        } else {
+                            $button.prop('disabled', false).removeClass('hhrh-btn-loading');
+                            HHRH.showNotification(
+                                'warning',
+                                'Verification Failed',
+                                'Temperature update sent, but verification failed. Please check the device.'
+                            );
+                        }
                     }
                 });
-            }, 4000); // Wait 4 seconds for HA to process and TRV to acknowledge
+            }, pollInterval);
+        },
+
+        /**
+         * Update TRV target temperature display in modal
+         */
+        updateTrvTargetDisplay: function($control, climateTarget, commandTarget, hasPending) {
+            const $targetDisplay = $control.find('.hhrh-temp-display-value').last();
+
+            if (hasPending && commandTarget !== null) {
+                // Show greyed out climate target with pending command target
+                $targetDisplay.html(
+                    '<span class="hhrh-target-actual">' + climateTarget.toFixed(1) + '°C</span>' +
+                    '<span class="hhrh-target-pending">' + commandTarget.toFixed(1) + '°C</span>'
+                );
+            } else {
+                // Show normal target
+                $targetDisplay.text(climateTarget.toFixed(1) + '°C');
+            }
         },
 
         /**
@@ -1114,10 +1189,11 @@
             const iconMap = {
                 'success': 'check_circle',
                 'error': 'error',
-                'warning': 'warning'
+                'warning': 'warning',
+                'info': 'info'
             };
 
-            $('#hhrh-notification-icon').removeClass('success error warning').addClass(type);
+            $('#hhrh-notification-icon').removeClass('success error warning info').addClass(type);
             $('#hhrh-notification-icon .material-symbols-outlined').text(iconMap[type] || 'info');
             $('#hhrh-notification-title').text(title);
             $('#hhrh-notification-message').text(message);
