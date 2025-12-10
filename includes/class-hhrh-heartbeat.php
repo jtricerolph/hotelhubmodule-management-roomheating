@@ -67,12 +67,12 @@ class HHRH_Heartbeat {
             // Get room updates
             $updates = $this->get_room_updates($location_id);
 
-            if ($updates) {
-                $response['hhrh_heartbeat'] = array(
-                    'updates'   => $updates,
-                    'timestamp' => current_time('timestamp')
-                );
-            }
+            // Always send response with fresh nonce to keep session alive
+            $response['hhrh_heartbeat'] = array(
+                'updates'   => $updates ?: array(),
+                'timestamp' => current_time('timestamp'),
+                'nonce'     => wp_create_nonce('hhrh_nonce') // Refresh nonce to prevent expiration
+            );
         }
 
         return $response;

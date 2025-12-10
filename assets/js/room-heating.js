@@ -1243,6 +1243,11 @@
          * Handle heartbeat updates
          */
         handleHeartbeatUpdate: function(data) {
+            // Update nonce if provided (keeps session alive)
+            if (data.nonce) {
+                hhrhData.nonce = data.nonce;
+            }
+
             if (!data.updates || data.updates.length === 0) {
                 return;
             }
