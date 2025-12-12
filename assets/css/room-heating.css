@@ -765,6 +765,13 @@
     margin-left: 8px;
 }
 
+.hhrh-pending-time {
+    color: #9ca3af;
+    font-size: 11px;
+    font-weight: 400;
+    margin-top: 4px;
+}
+
 .hhrh-temp-control {
     display: flex;
     align-items: center;

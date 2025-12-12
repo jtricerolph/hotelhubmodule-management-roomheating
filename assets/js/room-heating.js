@@ -989,10 +989,14 @@
                     const $targetValue = $('<div>', { class: 'hhrh-temp-display-value' });
                     if (trv.has_pending_target && trv.command_target_temp !== null) {
                         // Show greyed out actual temp with pending command temp
-                        $targetValue.html(
-                            '<span class="hhrh-target-actual">' + (trv.target_temp || '--') + '°</span>' +
-                            '<span class="hhrh-target-pending">' + trv.command_target_temp.toFixed(1) + '°</span>'
-                        );
+                        let pendingHtml = '<span class="hhrh-target-actual">' + (trv.target_temp || '--') + '°</span>' +
+                            '<span class="hhrh-target-pending">' + trv.command_target_temp.toFixed(1) + '°</span>';
+
+                        // Add pending command time if available
+                        if (trv.pending_command_time) {
+                            pendingHtml += '<div class="hhrh-pending-time">Sent: ' + trv.pending_command_time + '</div>';
+                        }
+                        $targetValue.html(pendingHtml);
                     } else {
                         $targetValue.text((trv.target_temp || '--') + '°');
                     }
