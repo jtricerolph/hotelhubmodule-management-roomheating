@@ -777,17 +777,19 @@
                     }));
 
                     // Temperature input
-                    $tempControl.append($('<input>', {
+                    const $setAllInput = $('<input>', {
                         type: 'number',
                         class: 'hhrh-temp-input',
                         id: 'hhrh-set-all-temp',
                         min: 5,
                         max: 30,
                         step: 0.5,
-                        value: avgTarget,
-                        'data-original-value': avgTarget,
-                        'data-entity-ids': JSON.stringify(entityIds)
-                    }));
+                        value: avgTarget
+                    });
+                    // Use jQuery .data() to store complex data (not as HTML attribute)
+                    $setAllInput.data('original-value', avgTarget);
+                    $setAllInput.data('entityIds', entityIds);
+                    $tempControl.append($setAllInput);
 
                     // Increase button
                     $tempControl.append($('<button>', {
@@ -1166,6 +1168,8 @@
          * Set temperature for all valves in room
          */
         setAllTemperatures: function(entityIds, temperature, $input) {
+            console.log('[HHRH] setAllTemperatures called:', { entityIds, temperature });
+
             const $button = $('.hhrh-btn-apply-all');
             $button.prop('disabled', true).addClass('hhrh-btn-loading');
 
@@ -1175,6 +1179,7 @@
 
             // Send request for each entity
             entityIds.forEach(entityId => {
+                console.log('[HHRH] Sending temperature request for:', entityId, 'temp:', temperature);
                 $.ajax({
                     url: hhrhData.ajaxUrl,
                     type: 'POST',
@@ -1186,11 +1191,13 @@
                         location_id: hhrhData.locationId
                     },
                     success: function(response) {
+                        console.log('[HHRH] Response for', entityId, ':', response);
                         if (!response.success) {
                             failed++;
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('[HHRH] Error for', entityId, ':', status, error);
                         failed++;
                     },
                     complete: function() {
