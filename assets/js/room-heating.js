@@ -708,7 +708,28 @@
             if (data.trvs && data.trvs.length > 0) {
                 const $trvControls = $('<div>', { class: 'hhrh-trv-controls' });
 
-                data.trvs.forEach(trv => {
+                // Sort TRVs: Bedroom(s) first, then Lounge, then others alphabetically, Bathroom last
+                const sortedTrvs = [...data.trvs].sort((a, b) => {
+                    const getSortPriority = (location) => {
+                        const loc = location.toLowerCase();
+                        if (loc.startsWith('bedroom')) return 0; // Bedroom, Bedroom1, Bedroom 2, etc.
+                        if (loc === 'lounge') return 1;
+                        if (loc === 'bathroom') return 999; // Always last
+                        return 2; // Everything else in the middle
+                    };
+
+                    const priorityA = getSortPriority(a.location);
+                    const priorityB = getSortPriority(b.location);
+
+                    if (priorityA !== priorityB) {
+                        return priorityA - priorityB;
+                    }
+
+                    // Within same priority, sort alphabetically
+                    return a.location.localeCompare(b.location);
+                });
+
+                sortedTrvs.forEach(trv => {
                     console.log('[HHRH] TRV Data:', {
                         location: trv.location,
                         wifi_signal: trv.wifi_signal,
