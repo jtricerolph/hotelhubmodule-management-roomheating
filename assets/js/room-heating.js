@@ -177,12 +177,20 @@
                 }
             });
 
-            // Temperature control
-            $(document).on('click', '.hhrh-btn-apply', function() {
+            // Temperature control - single valve
+            $(document).on('click', '.hhrh-btn-apply:not(.hhrh-btn-apply-all)', function() {
                 const entityId = $(this).data('entity-id');
                 const $input = $(this).closest('.hhrh-trv-control').find('.hhrh-temp-input');
                 const temperature = parseFloat($input.val());
                 HHRH.setTemperature(entityId, temperature, $input);
+            });
+
+            // Temperature control - all valves
+            $(document).on('click', '.hhrh-btn-apply-all', function() {
+                const $input = $('#hhrh-set-all-temp');
+                const temperature = parseFloat($input.val());
+                const entityIds = JSON.parse($input.data('entity-ids'));
+                HHRH.setAllTemperatures(entityIds, temperature, $input);
             });
 
             // Temperature decrease button
@@ -735,6 +743,66 @@
             if (data.trvs && data.trvs.length > 0) {
                 const $trvControls = $('<div>', { class: 'hhrh-trv-controls' });
 
+                // Set All Valves control (only if user has permission and more than 1 TRV)
+                if (data.can_control && data.trvs.length > 1) {
+                    const $setAllControl = $('<div>', { class: 'hhrh-set-all-control' });
+
+                    const $setAllLabel = $('<div>', { class: 'hhrh-set-all-label' });
+                    $setAllLabel.append($('<span>', {
+                        class: 'material-symbols-outlined',
+                        text: 'thermostat'
+                    }));
+                    $setAllLabel.append($('<span>', { text: 'Set All Valves' }));
+                    $setAllControl.append($setAllLabel);
+
+                    const $tempControl = $('<div>', { class: 'hhrh-temp-control' });
+
+                    // Get average target temp for default value
+                    const avgTarget = Math.round(data.trvs.reduce((sum, t) => sum + (t.target_temp || 20), 0) / data.trvs.length * 2) / 2;
+
+                    // Store entity IDs for the set all function
+                    const entityIds = data.trvs.map(t => t.entity_id);
+
+                    // Decrease button
+                    $tempControl.append($('<button>', {
+                        class: 'hhrh-temp-btn hhrh-temp-decrease',
+                        type: 'button',
+                        'data-target': 'set-all',
+                        text: '−'
+                    }));
+
+                    // Temperature input
+                    $tempControl.append($('<input>', {
+                        type: 'number',
+                        class: 'hhrh-temp-input',
+                        id: 'hhrh-set-all-temp',
+                        min: 5,
+                        max: 30,
+                        step: 0.5,
+                        value: avgTarget,
+                        'data-original-value': avgTarget,
+                        'data-entity-ids': JSON.stringify(entityIds)
+                    }));
+
+                    // Increase button
+                    $tempControl.append($('<button>', {
+                        class: 'hhrh-temp-btn hhrh-temp-increase',
+                        type: 'button',
+                        'data-target': 'set-all',
+                        text: '+'
+                    }));
+
+                    // Apply button
+                    $tempControl.append($('<button>', {
+                        class: 'hhrh-btn-apply hhrh-btn-apply-all',
+                        id: 'hhrh-set-all-apply',
+                        text: 'Apply All'
+                    }));
+
+                    $setAllControl.append($tempControl);
+                    $trvControls.append($setAllControl);
+                }
+
                 // Sort TRVs: Bedroom(s) first, then Lounge, then others alphabetically, Bathroom last
                 const sortedTrvs = HHRH.sortTrvsByLocation(data.trvs);
 
@@ -1086,6 +1154,84 @@
                         hhrhData.strings.tempUpdateFailed
                     );
                 }
+            });
+        },
+
+        /**
+         * Set temperature for all valves in room
+         */
+        setAllTemperatures: function(entityIds, temperature, $input) {
+            const $button = $('.hhrh-btn-apply-all');
+            $button.prop('disabled', true).addClass('hhrh-btn-loading');
+
+            let completed = 0;
+            let failed = 0;
+            const total = entityIds.length;
+
+            // Send request for each entity
+            entityIds.forEach(entityId => {
+                $.ajax({
+                    url: hhrhData.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'hhrh_set_temperature',
+                        nonce: hhrhData.nonce,
+                        entity_id: entityId,
+                        temperature: temperature,
+                        location_id: hhrhData.locationId
+                    },
+                    success: function(response) {
+                        if (!response.success) {
+                            failed++;
+                        }
+                    },
+                    error: function() {
+                        failed++;
+                    },
+                    complete: function() {
+                        completed++;
+
+                        // All requests completed
+                        if (completed === total) {
+                            $button.prop('disabled', false).removeClass('hhrh-btn-loading');
+
+                            if (failed === 0) {
+                                // Update all individual inputs to match
+                                $('.hhrh-trv-control .hhrh-temp-input').each(function() {
+                                    $(this).val(temperature.toFixed(1));
+                                    $(this).data('original-value', temperature);
+                                    $(this).removeClass('hhrh-temp-modified');
+                                });
+
+                                // Update set all input
+                                $input.data('original-value', temperature);
+                                $input.removeClass('hhrh-temp-modified');
+
+                                HHRH.showNotification(
+                                    'success',
+                                    'All Temperatures Updated',
+                                    'All ' + total + ' valves set to ' + temperature.toFixed(1) + '°C'
+                                );
+
+                                // Refresh main room list
+                                HHRH.loadRooms();
+                            } else if (failed < total) {
+                                HHRH.showNotification(
+                                    'warning',
+                                    'Partial Update',
+                                    (total - failed) + ' of ' + total + ' valves updated. ' + failed + ' failed.'
+                                );
+                                HHRH.loadRooms();
+                            } else {
+                                HHRH.showNotification(
+                                    'error',
+                                    'Update Failed',
+                                    'Failed to update all valves. Please try again.'
+                                );
+                            }
+                        }
+                    }
+                });
             });
         },
 
