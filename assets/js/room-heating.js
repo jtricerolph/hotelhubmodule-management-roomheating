@@ -69,6 +69,30 @@
         },
 
         /**
+         * Sort TRVs by location: Bedroom > Lounge > Others (alphabetically) > Bathroom
+         */
+        sortTrvsByLocation: function(trvs) {
+            return [...trvs].sort((a, b) => {
+                const getSortPriority = (location) => {
+                    const loc = location.toLowerCase();
+                    if (loc.startsWith('bedroom')) return 0;
+                    if (loc === 'lounge') return 1;
+                    if (loc === 'bathroom') return 999;
+                    return 2;
+                };
+
+                const priorityA = getSortPriority(a.location);
+                const priorityB = getSortPriority(b.location);
+
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
+                }
+
+                return a.location.localeCompare(b.location);
+            });
+        },
+
+        /**
          * Initialize the module
          */
         init: function() {
@@ -437,7 +461,10 @@
             if (room.trvs && room.trvs.length > 0) {
                 const $trvs = $('<div>', { class: 'hhrh-room-trvs' });
 
-                room.trvs.forEach(trv => {
+                // Sort TRVs: Bedroom(s) first, then Lounge, then others alphabetically, Bathroom last
+                const sortedTrvs = HHRH.sortTrvsByLocation(room.trvs);
+
+                sortedTrvs.forEach(trv => {
                     const $trvItem = $('<div>', { class: 'hhrh-trv-item' });
 
                     // Radiator icon based on valve position
@@ -709,25 +736,7 @@
                 const $trvControls = $('<div>', { class: 'hhrh-trv-controls' });
 
                 // Sort TRVs: Bedroom(s) first, then Lounge, then others alphabetically, Bathroom last
-                const sortedTrvs = [...data.trvs].sort((a, b) => {
-                    const getSortPriority = (location) => {
-                        const loc = location.toLowerCase();
-                        if (loc.startsWith('bedroom')) return 0; // Bedroom, Bedroom1, Bedroom 2, etc.
-                        if (loc === 'lounge') return 1;
-                        if (loc === 'bathroom') return 999; // Always last
-                        return 2; // Everything else in the middle
-                    };
-
-                    const priorityA = getSortPriority(a.location);
-                    const priorityB = getSortPriority(b.location);
-
-                    if (priorityA !== priorityB) {
-                        return priorityA - priorityB;
-                    }
-
-                    // Within same priority, sort alphabetically
-                    return a.location.localeCompare(b.location);
-                });
+                const sortedTrvs = HHRH.sortTrvsByLocation(data.trvs);
 
                 sortedTrvs.forEach(trv => {
                     console.log('[HHRH] TRV Data:', {
