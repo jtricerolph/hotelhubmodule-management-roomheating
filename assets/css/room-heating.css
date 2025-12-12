@@ -576,20 +576,22 @@
 
 /* Set All Valves Control */
 .hhrh-set-all-control {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border: 2px solid #0ea5e9;
-    border-radius: 12px;
+    background: #f9fafb;
+    border: 3px solid #6b7280;
+    border-radius: 8px;
     padding: 16px;
     margin-bottom: 8px;
+    text-align: center;
 }
 
 .hhrh-set-all-label {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     font-size: 16px;
     font-weight: 600;
-    color: #0369a1;
+    color: #374151;
     margin-bottom: 12px;
 }
 
@@ -598,17 +600,7 @@
 }
 
 .hhrh-set-all-control .hhrh-temp-control {
-    justify-content: flex-start;
-}
-
-.hhrh-btn-apply-all {
-    background: #0ea5e9 !important;
-    border-color: #0284c7 !important;
-    color: #fff !important;
-}
-
-.hhrh-btn-apply-all:hover {
-    background: #0284c7 !important;
+    justify-content: center;
 }
 
 .hhrh-trv-control {

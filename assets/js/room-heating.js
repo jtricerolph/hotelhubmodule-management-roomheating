@@ -189,8 +189,13 @@
             $(document).on('click', '.hhrh-btn-apply-all', function() {
                 const $input = $('#hhrh-set-all-temp');
                 const temperature = parseFloat($input.val());
-                const entityIds = JSON.parse($input.data('entity-ids'));
-                HHRH.setAllTemperatures(entityIds, temperature, $input);
+                // jQuery .data() auto-parses JSON and converts hyphenated names to camelCase
+                const entityIds = $input.data('entityIds');
+                if (entityIds && entityIds.length > 0) {
+                    HHRH.setAllTemperatures(entityIds, temperature, $input);
+                } else {
+                    console.error('[HHRH] No entity IDs found for Set All');
+                }
             });
 
             // Temperature decrease button
