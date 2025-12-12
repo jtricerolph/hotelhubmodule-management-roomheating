@@ -754,14 +754,15 @@
 .hhrh-target-actual {
     color: #9ca3af;
     text-decoration: line-through;
-    font-size: 24px;
-    margin-right: 8px;
+    font-size: 32px;
+    font-weight: 700;
 }
 
 .hhrh-target-pending {
     color: #f59e0b;
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 600;
+    margin-left: 8px;
 }
 
 .hhrh-temp-control {
