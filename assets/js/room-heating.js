@@ -1219,60 +1219,55 @@
 
                         // All requests completed
                         if (completed === total) {
-                            $button.prop('disabled', false).removeClass('hhrh-btn-loading');
-
                             if (failed === 0) {
-                                // Update all individual inputs and target displays to show pending state
-                                $('.hhrh-trv-control').each(function() {
-                                    const $control = $(this);
-                                    const $tempInput = $control.find('.hhrh-temp-input');
-                                    const $targetValue = $control.find('.hhrh-temp-display-value').eq(1); // Second one is Target
+                                // Wait for valves to respond before refreshing (similar to individual verify)
+                                // Keep button in loading state during verification delay
+                                setTimeout(function() {
+                                    $button.prop('disabled', false).removeClass('hhrh-btn-loading');
 
-                                    // Get current actual target temp from input's original value
-                                    const actualTarget = parseFloat($tempInput.data('original-value')) || null;
+                                    // Update all individual inputs
+                                    $('.hhrh-trv-control .hhrh-temp-input').each(function() {
+                                        $(this).val(temperature.toFixed(1));
+                                        $(this).data('original-value', temperature);
+                                        $(this).removeClass('hhrh-temp-modified');
+                                    });
 
-                                    // Update input
-                                    $tempInput.val(temperature.toFixed(1));
-                                    $tempInput.data('original-value', temperature);
-                                    $tempInput.removeClass('hhrh-temp-modified');
+                                    // Update set all input
+                                    $input.data('original-value', temperature);
+                                    $input.removeClass('hhrh-temp-modified');
 
-                                    // Update target display to show pending state
-                                    if ($targetValue.length && actualTarget !== null && Math.abs(actualTarget - temperature) > 0.1) {
-                                        const now = new Date();
-                                        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                        $targetValue.html(
-                                            '<span class="hhrh-target-actual">' + actualTarget + '°</span>' +
-                                            '<span class="hhrh-target-pending">' + temperature.toFixed(1) + '°</span>' +
-                                            '<div class="hhrh-pending-time">Sent: ' + timeStr + '</div>'
-                                        );
+                                    HHRH.showNotification(
+                                        'success',
+                                        'All Temperatures Updated',
+                                        'All ' + total + ' valves set to ' + temperature.toFixed(1) + '°C'
+                                    );
+
+                                    // Refresh to get actual state from backend (will show pending only if valves didn't respond)
+                                    HHRH.loadRooms();
+
+                                    // Also refresh the modal if open
+                                    const roomId = $('#hhrh-modal').data('room-id');
+                                    if (roomId) {
+                                        HHRH.openRoomModal(roomId);
                                     }
-                                });
-
-                                // Update set all input
-                                $input.data('original-value', temperature);
-                                $input.removeClass('hhrh-temp-modified');
-
-                                HHRH.showNotification(
-                                    'success',
-                                    'All Temperatures Updated',
-                                    'All ' + total + ' valves set to ' + temperature.toFixed(1) + '°C'
-                                );
-
-                                // Refresh main room list
-                                HHRH.loadRooms();
-                            } else if (failed < total) {
-                                HHRH.showNotification(
-                                    'warning',
-                                    'Partial Update',
-                                    (total - failed) + ' of ' + total + ' valves updated. ' + failed + ' failed.'
-                                );
-                                HHRH.loadRooms();
+                                }, 3000); // 3 second delay to allow valves to respond
                             } else {
-                                HHRH.showNotification(
-                                    'error',
-                                    'Update Failed',
-                                    'Failed to update all valves. Please try again.'
-                                );
+                                $button.prop('disabled', false).removeClass('hhrh-btn-loading');
+
+                                if (failed < total) {
+                                    HHRH.showNotification(
+                                        'warning',
+                                        'Partial Update',
+                                        (total - failed) + ' of ' + total + ' valves updated. ' + failed + ' failed.'
+                                    );
+                                    HHRH.loadRooms();
+                                } else {
+                                    HHRH.showNotification(
+                                        'error',
+                                        'Update Failed',
+                                        'Failed to update all valves. Please try again.'
+                                    );
+                                }
                             }
                         }
                     }
