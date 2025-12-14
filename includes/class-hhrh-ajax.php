@@ -165,7 +165,7 @@ class HHRH_Ajax {
                 $location = 'Unknown';
             }
 
-            // Get battery level and valve position
+            // Get battery level, valve position, and command target temp
             $trv_base = str_replace('climate.', '', $trv['entity_id']);
             $battery_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_battery");
             $battery_level = $battery_entity ? (int)$battery_entity['state'] : null;
@@ -173,18 +173,26 @@ class HHRH_Ajax {
             $valve_entity = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_valve_position");
             $valve_position = $valve_entity ? (int)$valve_entity['state'] : null;
 
+            // Get command target temp for pending detection
+            $command_target = $ha_api->find_state($all_states, "sensor.{$trv_base}_trv_target_temperature");
+            $climate_target = isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null;
+            $command_target_temp = $command_target ? (float)$command_target['state'] : null;
+            $has_pending_target = ($command_target_temp !== null && $climate_target !== null && abs($command_target_temp - $climate_target) > 0.1);
+
             if ($battery_level !== null && $battery_level < $min_battery) {
                 $min_battery = $battery_level;
             }
 
             $trv_data[] = array(
-                'entity_id'      => $trv['entity_id'],
-                'location'       => $location,
-                'current_temp'   => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
-                'target_temp'    => isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null,
-                'hvac_mode'      => isset($trv['state']) ? $trv['state'] : 'unknown',
-                'battery'        => $battery_level,
-                'valve_position' => $valve_position
+                'entity_id'           => $trv['entity_id'],
+                'location'            => $location,
+                'current_temp'        => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
+                'target_temp'         => $climate_target,
+                'command_target_temp' => $command_target_temp,
+                'has_pending_target'  => $has_pending_target,
+                'hvac_mode'           => isset($trv['state']) ? $trv['state'] : 'unknown',
+                'battery'             => $battery_level,
+                'valve_position'      => $valve_position
             );
         }
 
