@@ -104,10 +104,10 @@
             const now = new Date();
             const ageMinutes = (now - commandDate) / (1000 * 60);
 
-            if (ageMinutes >= 10) {
-                return '<span class="hhrh-pending-warning hhrh-pending-critical" title="Command pending for over 10 minutes"><span class="material-symbols-outlined">error</span></span>';
-            } else if (ageMinutes >= 5) {
-                return '<span class="hhrh-pending-warning hhrh-pending-warn" title="Command pending for over 5 minutes"><span class="material-symbols-outlined">warning</span></span>';
+            if (ageMinutes >= 30) {
+                return '<span class="hhrh-pending-warning hhrh-pending-critical" title="Command pending for over 30 minutes"><span class="material-symbols-outlined">error</span></span>';
+            } else if (ageMinutes >= 15) {
+                return '<span class="hhrh-pending-warning hhrh-pending-warn" title="Command pending for over 15 minutes"><span class="material-symbols-outlined">warning</span></span>';
             }
 
             return '';
