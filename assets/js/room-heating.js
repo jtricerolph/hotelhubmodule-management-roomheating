@@ -994,7 +994,10 @@
 
                         // Add pending command time if available
                         if (trv.pending_command_time) {
-                            pendingHtml += '<div class="hhrh-pending-time">Sent: ' + trv.pending_command_time + '</div>';
+                            // Format ISO timestamp to readable time (HH:MM:SS)
+                            const pendingTime = new Date(trv.pending_command_time);
+                            const timeStr = pendingTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                            pendingHtml += '<div class="hhrh-pending-time">Sent: ' + timeStr + '</div>';
                         }
                         $targetValue.html(pendingHtml);
                     } else {

@@ -311,8 +311,8 @@ class HHRH_Ajax {
             // Get the climate's actual target temp and the command target temp
             $climate_target = isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null;
             $command_target_temp = $command_target ? (float)$command_target['state'] : null;
-            $pending_command_time = ($command_target && isset($command_target['attributes']['pending_command_time']))
-                ? $command_target['attributes']['pending_command_time']
+            $pending_command_time = ($command_target && isset($command_target['attributes']['ha_pending_command_time']))
+                ? $command_target['attributes']['ha_pending_command_time']
                 : null;
 
             // Determine if there's a pending target change (command != climate target)
