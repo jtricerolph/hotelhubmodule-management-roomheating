@@ -772,6 +772,18 @@
     margin-top: 4px;
 }
 
+/* Room card pending target display */
+.hhrh-card-target-actual {
+    color: #9ca3af;
+    text-decoration: line-through;
+    margin-right: 4px;
+}
+
+.hhrh-card-target-pending {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
 .hhrh-temp-control {
     display: flex;
     align-items: center;

@@ -507,10 +507,17 @@
                         text: trv.location + ':'
                     }));
 
-                    $trvItem.append($('<span>', {
-                        class: 'hhrh-trv-target',
-                        text: (trv.target_temp || '--') + '°C'
-                    }));
+                    // Show pending target if available
+                    const $target = $('<span>', { class: 'hhrh-trv-target' });
+                    if (trv.has_pending_target && trv.command_target_temp !== null) {
+                        $target.html(
+                            '<span class="hhrh-card-target-actual">' + (trv.target_temp || '--') + '°</span>' +
+                            '<span class="hhrh-card-target-pending">' + trv.command_target_temp.toFixed(1) + '°C</span>'
+                        );
+                    } else {
+                        $target.text((trv.target_temp || '--') + '°C');
+                    }
+                    $trvItem.append($target);
 
                     $trvs.append($trvItem);
                 });
@@ -1215,11 +1222,30 @@
                             $button.prop('disabled', false).removeClass('hhrh-btn-loading');
 
                             if (failed === 0) {
-                                // Update all individual inputs to match
-                                $('.hhrh-trv-control .hhrh-temp-input').each(function() {
-                                    $(this).val(temperature.toFixed(1));
-                                    $(this).data('original-value', temperature);
-                                    $(this).removeClass('hhrh-temp-modified');
+                                // Update all individual inputs and target displays to show pending state
+                                $('.hhrh-trv-control').each(function() {
+                                    const $control = $(this);
+                                    const $tempInput = $control.find('.hhrh-temp-input');
+                                    const $targetValue = $control.find('.hhrh-temp-display-value').eq(1); // Second one is Target
+
+                                    // Get current actual target temp from input's original value
+                                    const actualTarget = parseFloat($tempInput.data('original-value')) || null;
+
+                                    // Update input
+                                    $tempInput.val(temperature.toFixed(1));
+                                    $tempInput.data('original-value', temperature);
+                                    $tempInput.removeClass('hhrh-temp-modified');
+
+                                    // Update target display to show pending state
+                                    if ($targetValue.length && actualTarget !== null && Math.abs(actualTarget - temperature) > 0.1) {
+                                        const now = new Date();
+                                        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                        $targetValue.html(
+                                            '<span class="hhrh-target-actual">' + actualTarget + '°</span>' +
+                                            '<span class="hhrh-target-pending">' + temperature.toFixed(1) + '°</span>' +
+                                            '<div class="hhrh-pending-time">Sent: ' + timeStr + '</div>'
+                                        );
+                                    }
                                 });
 
                                 // Update set all input
