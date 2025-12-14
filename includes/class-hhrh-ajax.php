@@ -65,7 +65,8 @@ class HHRH_Ajax {
             ));
         }
 
-        $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : hha_get_current_location();
+        // Always use server's current location to avoid stale client-side location IDs
+        $location_id = hha_get_current_location();
 
         // Get settings for battery thresholds
         $settings = HHRH_Settings::get($location_id);
@@ -245,7 +246,8 @@ class HHRH_Ajax {
         }
 
         $room_id = isset($_POST['room_id']) ? sanitize_text_field($_POST['room_id']) : '';
-        $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : hha_get_current_location();
+        // Always use server's current location to avoid stale client-side location IDs
+        $location_id = hha_get_current_location();
 
         if (empty($room_id)) {
             wp_send_json_error(array(
@@ -388,7 +390,8 @@ class HHRH_Ajax {
 
         $entity_id = isset($_POST['entity_id']) ? sanitize_text_field($_POST['entity_id']) : '';
         $temperature = isset($_POST['temperature']) ? (float)$_POST['temperature'] : 0;
-        $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : hha_get_current_location();
+        // Always use server's current location to avoid stale client-side location IDs
+        $location_id = hha_get_current_location();
 
         if (empty($entity_id) || $temperature <= 0) {
             wp_send_json_error(array(
@@ -429,7 +432,8 @@ class HHRH_Ajax {
 
         $entity_id = isset($_POST['entity_id']) ? sanitize_text_field($_POST['entity_id']) : '';
         $expected_temp = isset($_POST['expected_temp']) ? (float)$_POST['expected_temp'] : null;
-        $location_id = isset($_POST['location_id']) ? (int)$_POST['location_id'] : hha_get_current_location();
+        // Always use server's current location to avoid stale client-side location IDs
+        $location_id = hha_get_current_location();
 
         if (empty($entity_id)) {
             wp_send_json_error(array(
