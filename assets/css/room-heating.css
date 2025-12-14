@@ -784,6 +784,26 @@
     font-weight: 600;
 }
 
+/* Pending command warning icons */
+.hhrh-pending-warning {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.hhrh-pending-warning .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.hhrh-pending-warn {
+    color: #f59e0b;
+}
+
+.hhrh-pending-critical {
+    color: #ef4444;
+}
+
 .hhrh-temp-control {
     display: flex;
     align-items: center;

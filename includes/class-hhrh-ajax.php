@@ -178,21 +178,25 @@ class HHRH_Ajax {
             $climate_target = isset($trv['attributes']['temperature']) ? (float)$trv['attributes']['temperature'] : null;
             $command_target_temp = $command_target ? (float)$command_target['state'] : null;
             $has_pending_target = ($command_target_temp !== null && $climate_target !== null && abs($command_target_temp - $climate_target) > 0.1);
+            $pending_command_time = ($command_target && isset($command_target['attributes']['ha_pending_command_time']))
+                ? $command_target['attributes']['ha_pending_command_time']
+                : null;
 
             if ($battery_level !== null && $battery_level < $min_battery) {
                 $min_battery = $battery_level;
             }
 
             $trv_data[] = array(
-                'entity_id'           => $trv['entity_id'],
-                'location'            => $location,
-                'current_temp'        => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
-                'target_temp'         => $climate_target,
-                'command_target_temp' => $command_target_temp,
-                'has_pending_target'  => $has_pending_target,
-                'hvac_mode'           => isset($trv['state']) ? $trv['state'] : 'unknown',
-                'battery'             => $battery_level,
-                'valve_position'      => $valve_position
+                'entity_id'            => $trv['entity_id'],
+                'location'             => $location,
+                'current_temp'         => isset($trv['attributes']['current_temperature']) ? (float)$trv['attributes']['current_temperature'] : null,
+                'target_temp'          => $climate_target,
+                'command_target_temp'  => $command_target_temp,
+                'has_pending_target'   => $has_pending_target,
+                'pending_command_time' => $pending_command_time,
+                'hvac_mode'            => isset($trv['state']) ? $trv['state'] : 'unknown',
+                'battery'              => $battery_level,
+                'valve_position'       => $valve_position
             );
         }
 

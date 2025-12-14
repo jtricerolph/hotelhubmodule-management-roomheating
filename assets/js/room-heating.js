@@ -93,6 +93,27 @@
         },
 
         /**
+         * Get pending command warning icon HTML based on age
+         * @param {string} pendingCommandTime ISO timestamp
+         * @returns {string} HTML for warning icon or empty string
+         */
+        getPendingWarningIcon: function(pendingCommandTime) {
+            if (!pendingCommandTime) return '';
+
+            const commandDate = new Date(pendingCommandTime);
+            const now = new Date();
+            const ageMinutes = (now - commandDate) / (1000 * 60);
+
+            if (ageMinutes >= 10) {
+                return '<span class="hhrh-pending-warning hhrh-pending-critical" title="Command pending for over 10 minutes"><span class="material-symbols-outlined">error</span></span>';
+            } else if (ageMinutes >= 5) {
+                return '<span class="hhrh-pending-warning hhrh-pending-warn" title="Command pending for over 5 minutes"><span class="material-symbols-outlined">warning</span></span>';
+            }
+
+            return '';
+        },
+
+        /**
          * Initialize the module
          */
         init: function() {
@@ -510,9 +531,11 @@
                     // Show pending target if available
                     const $target = $('<span>', { class: 'hhrh-trv-target' });
                     if (trv.has_pending_target && trv.command_target_temp !== null) {
+                        const warningIcon = HHRH.getPendingWarningIcon(trv.pending_command_time);
                         $target.html(
                             '<span class="hhrh-card-target-actual">' + (trv.target_temp || '--') + '°</span>' +
-                            '<span class="hhrh-card-target-pending">' + trv.command_target_temp.toFixed(1) + '°C</span>'
+                            '<span class="hhrh-card-target-pending">' + trv.command_target_temp.toFixed(1) + '°C</span>' +
+                            warningIcon
                         );
                     } else {
                         $target.text((trv.target_temp || '--') + '°C');
@@ -996,8 +1019,10 @@
                     const $targetValue = $('<div>', { class: 'hhrh-temp-display-value' });
                     if (trv.has_pending_target && trv.command_target_temp !== null) {
                         // Show greyed out actual temp with pending command temp
+                        const warningIcon = HHRH.getPendingWarningIcon(trv.pending_command_time);
                         let pendingHtml = '<span class="hhrh-target-actual">' + (trv.target_temp || '--') + '°</span>' +
-                            '<span class="hhrh-target-pending">' + trv.command_target_temp.toFixed(1) + '°</span>';
+                            '<span class="hhrh-target-pending">' + trv.command_target_temp.toFixed(1) + '°</span>' +
+                            warningIcon;
 
                         // Add pending command time if available
                         if (trv.pending_command_time) {
