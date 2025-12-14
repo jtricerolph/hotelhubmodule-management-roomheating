@@ -686,6 +686,8 @@
                 success: function(response) {
                     if (response.success) {
                         HHRH.renderRoomDetails(response.data);
+                        // Update main list room card with fresh data
+                        HHRH.updateRoomCardFromModalData(roomId, response.data);
                     } else {
                         $('#hhrh-modal-body').html('<p style="text-align:center;color:#dc2626;">' + (response.data.message || hhrhData.strings.error) + '</p>');
                     }
@@ -1153,6 +1155,76 @@
             }
 
             $('#hhrh-modal-body').html($body);
+        },
+
+        /**
+         * Update main list room card with fresh data from modal
+         */
+        updateRoomCardFromModalData: function(roomId, data) {
+            const $card = $(`.hhrh-room-card[data-room-id="${roomId}"]`);
+            if (!$card.length || !data.trvs) return;
+
+            // Update cached room data
+            const roomIndex = HHRH.rooms ? HHRH.rooms.findIndex(r => r.room_id === roomId) : -1;
+            if (roomIndex >= 0 && data.trvs) {
+                HHRH.rooms[roomIndex].trvs = data.trvs.map(trv => ({
+                    ...HHRH.rooms[roomIndex].trvs.find(t => t.entity_id === trv.entity_id),
+                    target_temp: trv.target_temp,
+                    command_target_temp: trv.command_target_temp,
+                    has_pending_target: trv.has_pending_target,
+                    pending_command_time: trv.pending_command_time,
+                    current_temp: trv.current_temp,
+                    valve_position: trv.valve_position,
+                    battery: trv.battery
+                }));
+            }
+
+            // Update TRV target temps in the card
+            const $trvItems = $card.find('.hhrh-trv-item');
+            const sortedTrvs = HHRH.sortTrvsByLocation(data.trvs);
+
+            sortedTrvs.forEach((trv, index) => {
+                const $item = $trvItems.eq(index);
+                if (!$item.length) return;
+
+                const $target = $item.find('.hhrh-trv-target');
+                if ($target.length) {
+                    if (trv.has_pending_target && trv.command_target_temp !== null) {
+                        const warningIcon = HHRH.getPendingWarningIcon(trv.pending_command_time);
+                        $target.html(
+                            '<span class="hhrh-card-target-actual">' + (trv.target_temp || '--') + '°</span>' +
+                            '<span class="hhrh-card-target-pending">' + trv.command_target_temp.toFixed(1) + '°C</span>' +
+                            warningIcon
+                        );
+                    } else {
+                        $target.text((trv.target_temp || '--') + '°C');
+                    }
+                }
+            });
+
+            // Update heating status if changed
+            if (data.heating_status) {
+                const statusIcon = {
+                    'heating': 'heat',
+                    'idle': 'ac_unit',
+                    'error': 'warning'
+                }[data.heating_status] || 'help';
+
+                const statusLabel = {
+                    'heating': 'Heating',
+                    'idle': 'Idle',
+                    'error': 'Error'
+                }[data.heating_status] || 'Unknown';
+
+                const $status = $card.find('.hhrh-room-status');
+                $status.removeClass('hhrh-status-heating hhrh-status-idle hhrh-status-error')
+                       .addClass('hhrh-status-' + data.heating_status);
+                $status.find('.material-symbols-outlined').text(statusIcon);
+                $status.contents().filter(function() { return this.nodeType === 3; }).remove();
+                $status.append(statusLabel);
+
+                $card.attr('data-status', data.heating_status);
+            }
         },
 
         /**
