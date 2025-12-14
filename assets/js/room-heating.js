@@ -665,7 +665,7 @@
          * Open room details modal
          */
         openRoomModal: function(roomId) {
-            $('#hhrh-modal').show();
+            $('#hhrh-modal').data('room-id', roomId).show();
 
             // Find room name from cached data
             const room = HHRH.rooms ? HHRH.rooms.find(r => r.room_id === roomId) : null;
