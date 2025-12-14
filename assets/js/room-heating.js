@@ -1542,6 +1542,26 @@
     // Try on document ready
     $(document).ready(function() {
         console.log('[HHRH] Document ready, checking for module...');
+
+        // Always keep nonce fresh via heartbeat, even when module isn't active
+        $(document).on('heartbeat-send.hhrh-nonce', function(e, data) {
+            // Always send minimal heartbeat to keep nonce fresh
+            if (typeof hhrhData !== 'undefined') {
+                data.hhrh_heartbeat = {
+                    location_id: hhrhData.locationId,
+                    last_update: 0
+                };
+            }
+        });
+
+        $(document).on('heartbeat-tick.hhrh-nonce', function(e, data) {
+            // Update nonce from heartbeat response
+            if (data.hhrh_heartbeat && data.hhrh_heartbeat.nonce && typeof hhrhData !== 'undefined') {
+                hhrhData.nonce = data.hhrh_heartbeat.nonce;
+                console.log('[HHRH] Nonce refreshed via heartbeat');
+            }
+        });
+
         checkAndInit();
     });
 
